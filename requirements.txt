@@ -2,12 +2,12 @@ streamlit
 pandas
 numpy
 statsmodels
-fbprophet
+prophet
 plotly
 matplotlib
 scikit-learn
 xgboost
 openpyxl
+langchain
 langchain-google-genai
-langchain-core    
 langchain-google-generativeai
