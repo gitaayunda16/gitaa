@@ -9,5 +9,4 @@ scikit-learn
 xgboost
 openpyxl
 langchain
-langchain-google-genai
-langchain-google-generativeai
+langchain-google-genai google-generativeai
