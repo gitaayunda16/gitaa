@@ -1,7 +1,16 @@
 streamlit
-statsmodels
 pandas
 numpy
-scikit-learn
+statsmodels
+prophet
+plotly
 matplotlib
-seaborn
+scikit-learn
+xgboost
+openpyxl
+langchain-google-genai
+langchain-core
+sqlite3  # Tidak perlu, karena ini sudah bawaan Python
+io       # Tidak perlu, karena ini sudah bawaan Python
+datetime # Tidak perlu, karena ini sudah bawaan Python
+re       # Tidak perlu, karena ini sudah bawaan Python
