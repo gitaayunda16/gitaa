@@ -223,7 +223,7 @@ else:
                 new_data = pd.read_excel(uploaded_file)
 
             # Validasi kolom
-            required_columns = ["Tanggal", "Pelanggan", "Nama Barang", "Kuantitas", "Penjualan", "Kota Pengiriman Pelanggan"]
+            required_columns = []
             if all(col in new_data.columns for col in required_columns):
                 # Mengubah kolom Tanggal menjadi datetime
                 new_data['Tanggal'] = pd.to_datetime(new_data['Tanggal'], errors='coerce')
