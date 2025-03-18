@@ -420,7 +420,7 @@ else:
                     worksheet.set_column('A:A', 20)  # Atur lebar kolom untuk 'Bulan'
                     worksheet.set_column('B:B', 15)  # Atur lebar kolom untuk 'Kuantitas'
                     worksheet.set_column('C:C', 15)  # Atur lebar kolom untuk 'Penjualan'
-                    worksheet.set_column('D:D', 20)
+                    worksheet.set_column('D:D', 20)  # Atur Lebar Kolom untuk ''
     
                 # Menyediakan tombol download untuk file Excel
                 st.download_button(
@@ -567,7 +567,7 @@ else:
                     worksheet.set_column('A:A', 20)  # Atur lebar kolom untuk 'Nama Barang'
                     worksheet.set_column('B:B', 20)  # Atur lebar kolom untuk 'Rata-rata Kuantitas'
                     worksheet.set_column('C:C', 15)  # Atur lebar kolom untuk 'Tren'
-                    worksheet.set_column('D:D', 50)  # Atur lebar kolom untuk 'Rekomendasi'
+                    worksheet.set_column('D:D', 50)  # Atur lebar kolom untuk 'Rekomendasi yang akan dilakukan' 
     
                 # Menyediakan tombol download untuk file Excel
                 st.download_button(
@@ -1181,7 +1181,7 @@ else:
         st.session_state.data['Tanggal'] = pd.to_datetime(st.session_state.data['Tanggal'], errors='coerce')
         st.session_state.data = st.session_state.data.dropna(subset=['Tanggal'])  # Hapus entri yang tidak valid
 
-        sorted_data = st.session_state.data.sort_values(by=["Tanggal", "Pelanggan", "Nama Barang", "Kuantitas", "Penjualan", "Kota Pengiriman Pelanggan"])
+        sorted_data = st.session_state.data.sort_values(by=[])   #(by=["Tanggal", "Pelanggan", "Nama Barang", "Kuantitas", "Penjualan", "Kota Pengiriman Pelanggan"])
         st.write(sorted_data)
 
     # Menyimpan data ke file CSV
