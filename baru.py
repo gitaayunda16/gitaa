@@ -199,7 +199,7 @@ else:
             st.session_state.data = pd.read_csv("data_akuntansi.csv")
             st.success("Data berhasil dimuat dari file CSV.")
         except FileNotFoundError:
-            st.session_state.data = pd.DataFrame(columns=["Tanggal", "Pelanggan", "Nama Barang", "Kuantitas", "Penjualan", "Kota Pengiriman Pelanggan"])
+            st.session_state.data = pd.DataFrame()
 
     # Menu untuk memilih fungsi
     menu = st.sidebar.selectbox("Pilih Fungsi", [
