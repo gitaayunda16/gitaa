@@ -206,7 +206,7 @@ else:
         "Unggah Data",
         "Akuntansi Utang",
         "Akuntansi Piutang",
-        "Pengelolaan Gaji",
+        #"Pengelolaan Gaji",
         #"Pelaporan Keuangan",
         "Penganggaran dan Peramalan",
     ])
