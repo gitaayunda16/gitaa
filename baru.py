@@ -207,7 +207,7 @@ else:
         "Akuntansi Utang",
         "Akuntansi Piutang",
         "Pengelolaan Gaji",
-        "Pelaporan Keuangan",
+        #"Pelaporan Keuangan",
         "Penganggaran dan Peramalan",
     ])
 
