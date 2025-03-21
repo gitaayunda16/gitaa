@@ -1188,8 +1188,6 @@ else:
     # Menampilkan data yang telah dimasukkan
     if st.button("Tampilkan Data"):
         # Pastikan kolom 'Tanggal' dalam format datetime
-        st.session_state.data['Tanggal'] = pd.to_datetime(st.session_state.data['Tanggal'], errors='coerce')
-        st.session_state.data = st.session_state.data.dropna(subset=['Tanggal'])  # Hapus entri yang tidak valid
 
         sorted_data = st.session_state.data.sort_values(by=[])   #(by=["Tanggal", "Pelanggan", "Nama Barang", "Kuantitas", "Penjualan", "Kota Pengiriman Pelanggan"])
         st.write(sorted_data)
