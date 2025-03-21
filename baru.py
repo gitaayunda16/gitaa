@@ -18,8 +18,7 @@ from langchain_core.prompts import ChatPromptTemplate
 import plotly.express as px
 import re
 
-# Password untuk mengakses aplikasi
-PASSWORD = "admin1234"  # Ganti dengan password yang diinginkan
+
 
 # Koneksi ke database SQLite
 def create_connection():
@@ -186,6 +185,7 @@ def chat(contexts, history, question):
     return result
 
 # Cek apakah pengguna sudah login
+PASSWORD = "admin1234"  # Ganti dengan password yang diinginkan
 if 'logged_in' not in st.session_state:
     st.session_state.logged_in = False
 
