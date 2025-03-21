@@ -49,6 +49,14 @@ create_table()
 # Judul aplikasi
 st.title("📈 Aplikasi")
 
+def process_date_column(data):
+    if 'Tanggal' in data.columns:
+        # Mengubah kolom Tanggal menjadi datetime
+        data['Tanggal'] = pd.to_datetime(data['Tanggal'], errors='coerce')
+        # Hapus entri yang tidak valid
+        data = data.dropna(subset=['Tanggal'])
+    return data
+
 def select_forecasting_method(product_data, steps=3, method='ARIMA'):
     if method == 'Naive':
         # Naive Method
@@ -221,17 +229,21 @@ else:
                 new_data = pd.read_csv(uploaded_file)
             else:
                 new_data = pd.read_excel(uploaded_file)
-
+    
             # Validasi kolom
-            required_columns = []
+            required_columns = []  # Ganti dengan kolom yang diperlukan
+            has_date_column = 'Tanggal' in new_data.columns
+    
             if all(col in new_data.columns for col in required_columns):
-                # Mengubah kolom Tanggal menjadi datetime
-                new_data['Tanggal'] = pd.to_datetime(new_data['Tanggal'], errors='coerce')
-                new_data = new_data.dropna(subset=['Tanggal'])  # Hapus entri yang tidak valid
+                # Memanggil fungsi untuk memproses kolom Tanggal
+                new_data = process_date_column(new_data)
                 
-                # Menstandarkan data numerik
-                #scaler = StandardScaler()
-                #new_data[['Kuantitas', 'Penjualan']] = scaler.fit_transform(new_data[['Kuantitas', 'Penjualan']])
+                if not has_date_column:
+                    st.warning("Kolom 'Tanggal' tidak ditemukan. Data akan tetap dimasukkan tanpa kolom 'Tanggal'.")
+    
+                # Menstandarkan data numerik (jika diperlukan)
+                # scaler = StandardScaler()
+                # new_data[['Kuantitas', 'Penjualan']] = scaler.fit_transform(new_data[['Kuantitas', 'Penjualan']])
                 
                 # Menggabungkan data yang diunggah dengan data yang sudah ada
                 st.session_state.data = pd.concat([st.session_state.data, new_data], ignore_index=True)
