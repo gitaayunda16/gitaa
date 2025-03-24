@@ -563,7 +563,7 @@ else:
             # Convert the results into a DataFrame
             forecast_df = pd.DataFrame(forecast_results)  # .apply(lambda x: f"{x:,.2f}")
             
-            create_tables()
+            #create_tables()
             
             if not forecast_df.empty:
                 st.write("Hasil Peramalan Transaksi Produk:")
