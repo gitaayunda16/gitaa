@@ -12,4 +12,3 @@ xgboost
 openpyxl
 langchain
 langchain-google-genai
-plotly-express
