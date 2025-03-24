@@ -1,6 +1,7 @@
 streamlit
 pandas
 numpy
+psycopg2
 statsmodels
 xlsxwriter
 prophet
@@ -11,3 +12,4 @@ xgboost
 openpyxl
 langchain
 langchain-google-genai
+plotly-express
