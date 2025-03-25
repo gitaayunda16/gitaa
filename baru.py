@@ -55,78 +55,80 @@ def process_date_column(data):
     return data
 
 def select_forecasting_method(product_data, steps=3, method='ARIMA'):
+    # Pastikan product_data adalah Series
+    if isinstance(product_data, pd.DataFrame):
+        product_data = product_data.squeeze()  # Mengubah DataFrame menjadi Series jika perlu
+
+    # Cek jumlah data yang tersedia
+    n = len(product_data)
+
     if method == 'Naive':
-        # Naive Method
-        return [product_data.iloc[-1]] * steps, "Naive"
-    
+        if n > 0:
+            return [product_data.iloc[-1]] * steps, "Naive"
+        else:
+            return [0] * steps, "No Data"
+
     elif method == 'Moving Average':
-        # Moving Average
-        if len(product_data) < 3:
-            raise ValueError("Not enough data for Moving Average.")
+        if n < 3:
+            return [product_data.mean()] * steps, "Average"  # Fallback ke rata-rata
         forecast = product_data.rolling(window=3).mean().iloc[-1]
         return [forecast] * steps, "Moving Average"
-    
+
     elif method == 'Exponential Smoothing':
-        # Exponential Smoothing
+        if n < 3:
+            return [product_data.mean()] * steps, "Average"  # Fallback ke rata-rata
         model = ExponentialSmoothing(product_data, trend='add', seasonal='add', seasonal_periods=12)
         model_fit = model.fit()
         forecast = model_fit.forecast(steps=steps)
         return forecast, "Exponential Smoothing"
-    
+
     elif method == 'Prophet':
-        # Prophet Method
-        if len(product_data) < 5:
-            raise ValueError("Not enough data for Prophet.")
+        if n < 5:
+            return [product_data.mean()] * steps, "Average"  # Fallback ke rata-rata
         
         prophet_data = pd.DataFrame({
-            'ds': product_data.index.to_timestamp(),  # Convert PeriodIndex to Timestamp
+            'ds': product_data.index.to_timestamp(),
             'y': product_data.values
         })
         
         prophet_model = Prophet()
         prophet_model.fit(prophet_data)
         future = prophet_model.make_future_dataframe(periods=steps, freq='M')
-        forecast = prophet_model.predict(future)['yhat'].values[-steps:]  # Get the last 'steps' forecasts
+        forecast = prophet_model.predict(future)['yhat'].values[-steps:]
         return forecast, "Prophet"
-    
+
     elif method == 'Random Forest':
-        # Random Forest Method
-        if len(product_data) < 5:
-            raise ValueError("Not enough data for Random Forest.")
+        if n < 5:
+            return [product_data.mean()] * steps, "Average"  # Fallback ke rata-rata
         
-        # Prepare the data
         df = pd.DataFrame(product_data)
-        df['Month'] = np.arange(len(df))  # Create a time index as a feature
+        df['Month'] = np.arange(len(df))
         X = df[['Month']]
         y = df['Penjualan']  # Assuming 'Penjualan' is the column name
         
         model = RandomForestRegressor(n_estimators=100, random_state=42)
         model.fit(X, y)
         
-        # Prepare future data for prediction
         future_months = np.array([[len(df) + i] for i in range(1, steps + 1)])
         forecast = model.predict(future_months)
         return forecast, "Random Forest"
-    
+
     elif method == 'XGBoost':
-        # XGBoost Method
-        if len(product_data) < 5:
-            raise ValueError("Not enough data for XGBoost.")
+        if n < 5:
+            return [product_data.mean()] * steps, "Average"  # Fallback ke rata-rata
         
-        # Prepare the data
         df = pd.DataFrame(product_data)
-        df['Month'] = np.arange(len(df))  # Create a time index as a feature
+        df['Month'] = np.arange(len(df))
         X = df[['Month']]
         y = df['Penjualan']  # Assuming 'Penjualan' is the column name
         
         model = XGBRegressor(n_estimators=100, random_state=42)
         model.fit(X, y)
         
-        # Prepare future data for prediction
         future_months = np.array([[len(df) + i] for i in range(1, steps + 1)])
         forecast = model.predict(future_months)
         return forecast, "XGBoost"
-    
+
     else:
         result = adfuller(product_data)
         is_stationary = result[1] <= 0.05
@@ -137,11 +139,100 @@ def select_forecasting_method(product_data, steps=3, method='ARIMA'):
             forecast = model_fit.forecast(steps=steps)
             return forecast, "ARIMA"
         else:
-            if len(product_data) > 0:
+            if n > 0:
                 average_forecast = product_data.mean()
                 return [average_forecast] * steps, "Average"
             else:
                 return [0] * steps, "No Data"
+
+#def select_forecasting_method(product_data, steps=3, method='ARIMA'):
+#    if method == 'Naive':
+        # Naive Method
+#        return [product_data.iloc[-1]] * steps, "Naive"
+    
+#    elif method == 'Moving Average':
+        # Moving Average
+#        if len(product_data) < 3:
+#            raise ValueError("Not enough data for Moving Average.")
+#        forecast = product_data.rolling(window=3).mean().iloc[-1]
+#        return [forecast] * steps, "Moving Average"
+    
+#    elif method == 'Exponential Smoothing':
+        # Exponential Smoothing
+#        model = ExponentialSmoothing(product_data, trend='add', seasonal='add', seasonal_periods=12)
+#        model_fit = model.fit()
+#        forecast = model_fit.forecast(steps=steps)
+#        return forecast, "Exponential Smoothing"
+    
+#    elif method == 'Prophet':
+        # Prophet Method
+#        if len(product_data) < 5:
+#            raise ValueError("Not enough data for Prophet.")
+        
+#        prophet_data = pd.DataFrame({
+#            'ds': product_data.index.to_timestamp(),  # Convert PeriodIndex to Timestamp
+#            'y': product_data.values
+#        })
+        
+#        prophet_model = Prophet()
+#        prophet_model.fit(prophet_data)
+#        future = prophet_model.make_future_dataframe(periods=steps, freq='M')
+#        forecast = prophet_model.predict(future)['yhat'].values[-steps:]  # Get the last 'steps' forecasts
+#        return forecast, "Prophet"
+    
+#    elif method == 'Random Forest':
+        # Random Forest Method
+#        if len(product_data) < 5:
+#            raise ValueError("Not enough data for Random Forest.")
+        
+        # Prepare the data
+#        df = pd.DataFrame(product_data)
+#        df['Month'] = np.arange(len(df))  # Create a time index as a feature
+#        X = df[['Month']]
+#        y = df['Penjualan']  # Assuming 'Penjualan' is the column name
+        
+#        model = RandomForestRegressor(n_estimators=100, random_state=42)
+#        model.fit(X, y)
+        
+        # Prepare future data for prediction
+#        future_months = np.array([[len(df) + i] for i in range(1, steps + 1)])
+#        forecast = model.predict(future_months)
+#        return forecast, "Random Forest"
+    
+#    elif method == 'XGBoost':
+        # XGBoost Method
+#        if len(product_data) < 5:
+#            raise ValueError("Not enough data for XGBoost.")
+        
+        # Prepare the data
+#        df = pd.DataFrame(product_data)
+#        df['Month'] = np.arange(len(df))  # Create a time index as a feature
+#        X = df[['Month']]
+#        y = df['Penjualan']  # Assuming 'Penjualan' is the column name
+        
+#        model = XGBRegressor(n_estimators=100, random_state=42)
+#        model.fit(X, y)
+        
+        # Prepare future data for prediction
+#        future_months = np.array([[len(df) + i] for i in range(1, steps + 1)])
+#        forecast = model.predict(future_months)
+#        return forecast, "XGBoost"
+    
+#    else:
+#        result = adfuller(product_data)
+#        is_stationary = result[1] <= 0.05
+
+#        if is_stationary:
+#            model = ARIMA(product_data, order=(1, 1, 1))
+#            model_fit = model.fit()
+#            forecast = model_fit.forecast(steps=steps)
+#            return forecast, "ARIMA"
+#        else:
+#            if len(product_data) > 0:
+#                average_forecast = product_data.mean()
+#                return [average_forecast] * steps, "Average"
+#            else:
+#                return [0] * steps, "No Data"
                 
         # Check for stationarity for ARIMA
         #result = adfuller(product_data)
