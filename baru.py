@@ -4,6 +4,7 @@ import numpy as np
 from datetime import datetime
 import sqlite3
 from statsmodels.tsa.arima.model import ARIMA
+from statsmodels.tsa.statespace.sarimax import SARIMAX
 from statsmodels.tsa.stattools import adfuller
 from statsmodels.tsa.holtwinters import ExponentialSmoothing
 from prophet import Prophet
@@ -102,7 +103,7 @@ def select_forecasting_method(product_data, steps=3, method='ARIMA'):
             return [product_data.mean()] * steps, "Average"  # Fallback ke rata-rata
         
         df = pd.DataFrame(product_data)
-        df['Month'] = np.arange(len(df))
+        df['Month'] = np.arange(len(df))  # Create a time index as a feature
         X = df[['Month']]
         y = df['Penjualan']  # Assuming 'Penjualan' is the column name
         
@@ -118,7 +119,7 @@ def select_forecasting_method(product_data, steps=3, method='ARIMA'):
             return [product_data.mean()] * steps, "Average"  # Fallback ke rata-rata
         
         df = pd.DataFrame(product_data)
-        df['Month'] = np.arange(len(df))
+        df['Month'] = np.arange(len(df))  # Create a time index as a feature
         X = df[['Month']]
         y = df['Penjualan']  # Assuming 'Penjualan' is the column name
         
@@ -128,6 +129,32 @@ def select_forecasting_method(product_data, steps=3, method='ARIMA'):
         future_months = np.array([[len(df) + i] for i in range(1, steps + 1)])
         forecast = model.predict(future_months)
         return forecast, "XGBoost"
+
+    elif method == 'SARIMA':
+        # Parameter SARIMA
+        p = 1  # Order of the autoregressive part
+        d = 1  # Degree of differencing
+        q = 1  # Order of the moving average part
+        P = 1  # Seasonal autoregressive order
+        D = 1  # Seasonal differencing order
+        Q = 1  # Seasonal moving average order
+        s = 12  # Seasonal period (e.g., 12 for monthly data)
+
+        # Check for stationarity
+        result = adfuller(product_data)
+        is_stationary = result[1] <= 0.05
+
+        if is_stationary:
+            model = SARIMAX(product_data, order=(p, d, q), seasonal_order=(P, D, Q, s))
+            model_fit = model.fit(disp=False)
+            forecast = model_fit.forecast(steps=steps)
+            return forecast, "SARIMA"
+        else:
+            if n > 0:
+                average_forecast = product_data.mean()
+                return [average_forecast] * steps, "Average"
+            else:
+                return [0] * steps, "No Data"
 
     else:
         result = adfuller(product_data)
@@ -144,6 +171,7 @@ def select_forecasting_method(product_data, steps=3, method='ARIMA'):
                 return [average_forecast] * steps, "Average"
             else:
                 return [0] * steps, "No Data"
+        
 
 #def select_forecasting_method(product_data, steps=3, method='ARIMA'):
 #    if method == 'Naive':
