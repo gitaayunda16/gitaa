@@ -2,8 +2,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 from datetime import datetime
-import psycopg2
-from psycopg2 import sql
+import sqlite3
 from statsmodels.tsa.arima.model import ARIMA
 from statsmodels.tsa.stattools import adfuller
 from statsmodels.tsa.holtwinters import ExponentialSmoothing
@@ -19,208 +18,55 @@ from langchain_core.prompts import ChatPromptTemplate
 import plotly.express as px
 import re
 
-# Koneksi ke database PostgreSQL
-def create_connection():
-    try:
-        conn = psycopg2.connect(
-            dbname="data_akuntansi",  # Ganti dengan nama database Anda
-            user="postgres",           # Ganti dengan username Anda
-            password="yundel87",      # Ganti dengan password Anda
-            host="localhost",         # Ganti dengan host jika perlu
-            port="5432",              # Ganti dengan port jika perlu
-            connect_timeout=10        # Timeout dalam detik
-        )
-        print("Koneksi berhasil!")
-        return conn
-    except Exception as e:
-        print(f"Error connecting to database: {e}")
 
-def create_tables():
+
+# Koneksi ke database SQLite
+def create_connection():
+    conn = sqlite3.connect("forecasting_results.db")
+    return conn
+
+def create_table():
     conn = create_connection()
     cursor = conn.cursor()
-    
-    # Buat tabel peramalan produk
     cursor.execute('''
-        CREATE TABLE IF NOT EXISTS forecasts_product (
-            id SERIAL PRIMARY KEY,
-            nama_barang TEXT NOT NULL,
-            tanggal DATE NOT NULL,
-            kuantitas INT NOT NULL,
-            penjualan REAL NOT NULL
-        );
+        CREATE TABLE IF NOT EXISTS forecasts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            product_name TEXT,
+            month TEXT,
+            sales REAL,
+            quantity REAL,
+            method TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
     ''')
-
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS forecasts_customers (
-            id SERIAL PRIMARY KEY,
-            pelanggan TEXT NOT NULL,
-            tanggal DATE NOT NULL, 
-            kuantitas INT NOT NULL,
-            penjualan REAL NOT NULL
-        );
-    ''')
-
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS insight_forecast_product_penjualan (
-            id SERIAL PRIMARY KEY,
-            nama_barang TEXT NOT NULL,
-            rata2_penjualan REAL NOT NULL,
-            tren TEXT NOT NULL,
-            rekomendasi TEXT NOT NULL 
-        );
-    ''')   
-
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS insight_forecast_product_kuantitas (
-            id SERIAL PRIMARY KEY, 
-            nama_barang_kuantitas TEXT NOT NULL,
-            rata2_kuantitas INT NOT NULL, 
-            tren TEXT NOT NULL,
-            rekomendasi TEXT NOT NULL
-        );
-    ''')
-
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS insight_forecast_customer_penjualan(
-            id SERIAL PRIMARY KEY,
-            pelanggan TEXT NOT NULL,
-            rata2_penjualan REAL NOT NULL,
-            tren TEXT NOT NULL,
-            rekomendasi TEXT NOT NULL
-        );
-    ''')
-
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS insight_forecast_customer_kuantitas(
-            id SERIAL PRIMARY KEY,
-            pelanggan1 TEXT NOT NULL,
-            rata2_kuantitas INT NOT NULL,
-            tren TEXT NOT NULL,
-            rekomendasi TEXT NOT NULL
-        );
-    ''')
-    
     conn.commit()
-    cursor.close()
     conn.close()
+
+# Create the table when the application starts
+create_table()
 
 # Judul aplikasi
 st.title("📈 Aplikasi")
 
-def insert_forecast_data(forecast_data):
-    conn = create_connection()
-    cursor = conn.cursor()
-    
-    for index, row in forecast_data.iterrows():
-        # Hapus tanda koma dan konversi ke float
-        sales_value = float(row['Penjualan'].replace(',', ''))
-        quantity_value = int(row['Kuantitas'])  # Pastikan kuantitas adalah integer
-
-        cursor.execute('''
-            INSERT INTO forecasts_product (nama_barang, tanggal, kuantitas, penjualan)
-            VALUES (%s, %s, %s, %s)
-        ''', (row['Nama Barang'], row['Tanggal'], quantity_value, sales_value))  # Pastikan 'Nama Pelanggan' ada di DataFrame
-    
-    conn.commit()
-    cursor.close()
-    conn.close()
-
-def insert_forecast_customers(forecast_customer):
-    conn = create_connection()
-    cursor = conn.cursor()
-
-    for index, row in forecast_customer.iterrows():
-        penjualan1 = float(row['Penjualan'].replace(',', ''))
-        kuantitas1 = int(row['Kuantitas'])
-
-        cursor.execute('''
-            INSERT INTO forecasts_customers (pelanggan, tanggal, kuantitas, penjualan)
-            VALUES (%s, %s, %s, %s)
-        ''', (row['Pelanggan'], row['Tanggal'], penjualan1, kuantitas1))
-
-    conn.commit()
-    cursor.close()
-    conn.close()
-
-def insert_insight_forecast_product_penjualan(insight_product_penjualan):
-    conn = create_connection()
-    cursor = conn.cursor()
-
-    for index, row in insight_product_penjualan.iterrows():
-        avg_forecast = float(row['Rata-rata Penjualan'])
-
-        cursor.execute('''
-            INSERT INTO insight_forecast_product_penjualan (nama_barang, rata2_penjualan, tren, rekomendasi)
-            VALUES (%s, %s, %s, %s)
-        ''', (row['Nama Barang'], avg_forecast, row['Tren'], row['Rekomendasi']))
-
-    conn.commit()
-    cursor.close()
-    conn.close()
-        
-def insert_insight_forecast_product_kuantitas(insight_product_kuantitas):
-    conn = create_connection()
-    cursor = conn.cursor()
-
-    for index, row in insight_product_kuantitas.iterrows():
-        avg_forecast_product = int(row['Rata-rata Kuantitas'])
-
-        cursor.execute('''
-            INSERT INTO insight_forecast_product_kuantitas (nama_barang_kuantitas, rata2_kuantitas, tren, rekomendasi)
-            VALUES (%s, %s, %s, %s)
-        ''', (row['Nama Barang'], avg_forecast_product, row['Tren'], row['Rekomendasi']))
-
-    conn.commit()
-    cursor.close()
-    conn.close()
-
-def insert_insight_forecast_customer_penjualan(insight_customer_penjualan):
-    conn = create_connection()
-    cursor = conn.cursor()
-
-    for index, row in insight_customer_penjualan.iterrows():
-        avg_forecast_customer = float(row['Rata-rata Penjualan'])
-
-        cursor.execute('''
-            INSERT INTO insight_forecast_customer_penjualan (pelanggan, rata2_penjualan, tren, rekomendasi)
-            VALUES (%s, %s, %s, %s)
-        ''', (row['Pelanggan'], avg_forecast_customer, row['Tren'], row['Rekomendasi']))
-
-    conn.commit()
-    cursor.close()
-    conn.close()
-
-def insert_insight_forecast_customer_kuantitas(insight_customer_kuantitas):
-    conn = create_connection()
-    cursor = conn.cursor()
-
-    for index, row in insight_customer_kuantitas.iterrows():
-        avg_forecast_kuantitas = int(row['Rata-rata Kuantitas'])
-
-    cursor.execute('''
-        INSERT INTO insight_forecast_customer_kuantitas (pelanggan1, rata2_kuantitas, tren, rekomendasi)
-        VALUES (%s, %s, %s, %s)
-    ''', (row['Pelanggan'], avg_forecast_kuantitas, row['Tren'], row['Rekomendasi']))
-    
-    conn.commit()
-    cursor.close()
-    conn.close()
+def process_date_column(data):
+    if 'Tanggal' in data.columns:
+        # Mengubah kolom Tanggal menjadi datetime
+        data['Tanggal'] = pd.to_datetime(data['Tanggal'], errors='coerce')
+        # Hapus entri yang tidak valid
+        data = data.dropna(subset=['Tanggal'])
+    return data
 
 def select_forecasting_method(product_data, steps=3, method='ARIMA'):
-    #if len(product_data) < 1:
-     #   return [0] * steps, "No Data"
-    
     if method == 'Naive':
-        if len(product_data) == 1:
-        # Jika hanya ada satu bulan data, gunakan metode naive
-            return [product_data.iloc[-1]] * steps, "Naive"
-            
+        # Naive Method
+        return [product_data.iloc[-1]] * steps, "Naive"
+    
     elif method == 'Moving Average':
+        # Moving Average
         if len(product_data) < 3:
             raise ValueError("Not enough data for Moving Average.")
         forecast = product_data.rolling(window=3).mean().iloc[-1]
         return [forecast] * steps, "Moving Average"
-        
     
     elif method == 'Exponential Smoothing':
         # Exponential Smoothing
@@ -381,17 +227,21 @@ else:
                 new_data = pd.read_csv(uploaded_file)
             else:
                 new_data = pd.read_excel(uploaded_file)
-
+    
             # Validasi kolom
-            required_columns = []
+            required_columns = []  # Ganti dengan kolom yang diperlukan
+            has_date_column = 'Tanggal' in new_data.columns
+    
             if all(col in new_data.columns for col in required_columns):
-                # Mengubah kolom Tanggal menjadi datetime
-                new_data['Tanggal'] = pd.to_datetime(new_data['Tanggal'], errors='coerce')
-                new_data = new_data.dropna(subset=['Tanggal'])  # Hapus entri yang tidak valid
+                # Memanggil fungsi untuk memproses kolom Tanggal
+                new_data = process_date_column(new_data)
                 
-                # Menstandarkan data numerik
-                #scaler = StandardScaler()
-                #new_data[['Kuantitas', 'Penjualan']] = scaler.fit_transform(new_data[['Kuantitas', 'Penjualan']])
+                if not has_date_column:
+                    st.warning("Kolom 'Tanggal' tidak ditemukan. Data akan tetap dimasukkan tanpa kolom 'Tanggal'.")
+    
+                # Menstandarkan data numerik (jika diperlukan)
+                # scaler = StandardScaler()
+                # new_data[['Kuantitas', 'Penjualan']] = scaler.fit_transform(new_data[['Kuantitas', 'Penjualan']])
                 
                 # Menggabungkan data yang diunggah dengan data yang sudah ada
                 st.session_state.data = pd.concat([st.session_state.data, new_data], ignore_index=True)
@@ -562,16 +412,11 @@ else:
     
             # Convert the results into a DataFrame
             forecast_df = pd.DataFrame(forecast_results)  # .apply(lambda x: f"{x:,.2f}")
-            
-            #create_tables()
-            
             if not forecast_df.empty:
                 st.write("Hasil Peramalan Transaksi Produk:")
                 forecast_df['Penjualan'] = forecast_df['Penjualan'].apply(lambda x: f"{x:,.2f}")
                 forecast_df['Tanggal'] = forecast_df['Tanggal'].dt.strftime('%d-%m-%y')  # Format tanggal
                 st.dataframe(forecast_df)
-
-                insert_forecast_data(forecast_df)
     
                 # Simpan dalam Excel dengan format rapi
                 excel_buffer = io.BytesIO()
@@ -656,17 +501,12 @@ else:
                             'Tren': 'Stabil',
                             'Rekomendasi': 'Pertahankan strategi pemasaran saat ini.'
                         })
-                
+    
                 # Buat DataFrame untuk wawasan produk
                 insights_product_df = pd.DataFrame(insights_product)
-
-                create_tables()
-                
                 st.write("Wawasan Berdasarkan Hasil Peramalan Produk:")
                 st.dataframe(insights_product_df)
-
-                insert_insight_forecast_product_penjualan(insights_product_df)
-
+    
                 # Simpan dalam Excel dengan format rapi
                 excel_buffer = io.BytesIO()
                 with pd.ExcelWriter(excel_buffer, engine="xlsxwriter") as writer:
@@ -721,11 +561,8 @@ else:
                         })
     
                 insights_quantity_product_df = pd.DataFrame(insights_quantity_product)
-                create_tables()
                 st.write("Wawasan Berdasarkan Hasil Peramalan Kuantitas Produk:")
                 st.dataframe(insights_quantity_product_df)
-
-                insert_insight_forecast_product_kuantitas(insights_quantity_product_df)
     
                 # Simpan dalam Excel dengan format rapi
                 excel_buffer = io.BytesIO()
@@ -779,16 +616,12 @@ else:
     
                 # Convert the results into a DataFrame
                 customer_forecast_df = pd.DataFrame(customer_forecast_results)
-
-                create_tables()
     
                 if not customer_forecast_df.empty:
                     st.write("Hasil Peramalan Transaksi Pelanggan:")
                     customer_forecast_df['Penjualan'] = customer_forecast_df['Penjualan'].apply(lambda x: f"{x:,.2f}")
                     customer_forecast_df['Tanggal'] = customer_forecast_df['Tanggal'].dt.strftime('%d-%m-%y')  # Format tanggal
                     st.dataframe(customer_forecast_df)
-
-                    insert_forecast_customers(customer_forecast_df)
     
                     # Simpan dalam Excel dengan format rapi
                     excel_buffer = io.BytesIO()
@@ -867,7 +700,6 @@ else:
                     st.write("Rata-rata Hasil Peramalan Pelanggan:")
                     average_customer_forecast_df['Rata-rata Penjualan'] = average_customer_forecast_df['Rata-rata Penjualan'].apply(lambda x: f"{x:,.2f}")
                     st.dataframe(average_customer_forecast_df)
-
                 
                     # Simpan dalam Excel dengan format rapi
                     excel_buffer = io.BytesIO()
@@ -923,11 +755,8 @@ else:
     
                 # Buat DataFrame untuk wawasan pelanggan
                 insights_customer_df = pd.DataFrame(insights_customer)
-                create_tables()
                 st.write("Wawasan Berdasarkan Hasil Peramalan Pelanggan:")
                 st.dataframe(insights_customer_df)
-
-                insert_insight_forecast_customer_penjualan(insights_customer_df)
     
                 # Simpan dalam Excel dengan format rapi
                 excel_buffer = io.BytesIO()
@@ -983,11 +812,8 @@ else:
                         })
     
                 insights_quantity_customer_df = pd.DataFrame(insights_quantity_customer)
-                create_tables()
                 st.write("Wawasan Berdasarkan Hasil Peramalan Kuantitas Pelanggan:")
                 st.dataframe(insights_quantity_customer_df)
-                
-                insert_insight_forecast_customer_kuantitas(insights_quantity_customer_df)
     
                 # Simpan dalam Excel dengan format rapi
                 excel_buffer = io.BytesIO()
@@ -1342,102 +1168,3 @@ else:
                                         fig.update_layout(
                                             xaxis_title='Pelanggan',
                                             yaxis_title='Rata-rata Penjualan',
-                                            xaxis=dict(tickangle=45),
-                                            showlegend=False,
-                                        )
-                            
-                                        st.markdown("Berikut adalah grafik untuk barang yang mengalami kenaikan:")
-                                        st.plotly_chart(fig, use_container_width=True)
-                                    else:
-                                        st.markdown("Tidak ada barang yang mengalami kenaikan.")
-                    
-                        # Add assistant response to chat history
-                        st.session_state.messages.append({"role": "assistant", "content": answer})
-    
-    # Menambahkan opsi untuk mereset seluruh chat history
-    if st.sidebar.button("Reset Chat History"):
-        st.session_state.messages = []  # Clear the chat history
-        st.success("Chat history telah direset. Anda dapat memulai percakapan baru.")
-
-    # Menampilkan data yang telah dimasukkan
-    if st.button("Tampilkan Data"):
-        # Pastikan kolom 'Tanggal' dalam format datetime
-        st.session_state.data['Tanggal'] = pd.to_datetime(st.session_state.data['Tanggal'], errors='coerce')
-        st.session_state.data = st.session_state.data.dropna(subset=['Tanggal'])  # Hapus entri yang tidak valid
-
-        sorted_data = st.session_state.data.sort_values(by=[])   #(by=["Tanggal", "Pelanggan", "Nama Barang", "Kuantitas", "Penjualan", "Kota Pengiriman Pelanggan"])
-        st.write(sorted_data)
-
-    # Menyimpan data ke file CSV
-    if st.button("Simpan Data ke CSV"):
-        st.session_state.data.to_csv("data_akuntansi.csv", index=False)
-        st.success("Data telah disimpan ke file CSV.")
-
-    # Menambahkan fitur untuk menghapus data
-    if st.button("Hapus Data Terakhir"):
-        if not st.session_state.data.empty:
-            st.session_state.data = st.session_state.data[:-1]
-            st.success("Data terakhir telah dihapus.")
-        else:
-            st.warning("Tidak ada data untuk dihapus.")
-
-    # Menambahkan fitur untuk mengedit data
-    if st.button("Edit Data"):
-        edit_index = st.number_input("Masukkan Indeks Data yang Ingin Diedit", min_value=0, max_value=len(st.session_state.data)-1)
-        if edit_index is not None and edit_index < len(st.session_state.data):
-            edited_row = st.session_state.data.iloc[edit_index]
-            new_vendor = st.text_input("Pelanggan", value=edited_row["Pelanggan"])
-            new_barang = st.text_input("Nama Barang", value=edited_row["Nama Barang"])
-            new_amount = st.number_input("Penjualan", value=edited_row["Penjualan"])
-            new_quantity = st.number_input("Kuantitas", value=edited_row["Kuantitas"])
-            new_date = st.date_input("Tanggal", value=edited_row["Tanggal"])
-            
-            if st.button("Simpan Perubahan"):
-                st.session_state.data.at[edit_index, "Pelanggan"] = new_vendor
-                st.session_state.data.at[edit_index, "Nama Barang"] = new_barang
-                st.session_state.data.at[edit_index, "Penjualan"] = new_amount
-                st.session_state.data.at[edit_index, "Kuantitas"] = new_quantity
-                st.session_state.data.at[edit_index, "Tanggal"] = new_date
-                st.success("Data telah diperbarui.")
-
-    # Menambahkan fitur untuk menampilkan ringkasan laporan
-    if st.button("Tampilkan Ringkasan Laporan"):
-        if not st.session_state.data.empty:
-            summary = st.session_state.data.groupby("Tipe Transaksi").agg({"Penjualan": "sum", "Kuantitas": "sum"}).reset_index()
-            st.write("Ringkasan Laporan:")
-            st.dataframe(summary)
-        else:
-            st.warning("Tidak ada data untuk ditampilkan.")
-
-    # Opsi untuk menghapus data
-    st.sidebar.subheader("Hapus Data")
-    if st.sidebar.button("Hapus Semua Data"):
-        st.session_state.data = pd.DataFrame(columns=["Pelanggan", "Tanggal", "Tipe Transaksi", "Nama Barang", "Kuantitas", "Penjualan"])
-        st.success("Semua data telah dihapus.")
-
-    # Panggil fungsi untuk menyimpan data ke database
-    if st.button("Simpan Data ke Database"):
-        save_data_to_database(st.session_state.data)
-        st.success("Data telah disimpan ke database.")
-
-    # Menambahkan fitur untuk menampilkan data terbaru
-    if st.button("Tampilkan Data Terbaru"):
-        if not st.session_state.data.empty:
-            latest_data = st.session_state.data.tail(5)
-            st.write("Data Terbaru:")
-            st.dataframe(latest_data)
-        else:
-            st.warning("Tidak ada data untuk ditampilkan.")
-
-    # Menambahkan opsi untuk menghapus entri tertentu
-    st.sidebar.subheader("Hapus Entri Tertentu")
-    if not st.session_state.data.empty:
-        entry_index = st.sidebar.number_input("Pilih Indeks Entri untuk Dihapus", min_value=0, max_value=len(st.session_state.data)-1, step=1)
-        if st.sidebar.button("Hapus Entri"):
-            st.session_state.data = st.session_state.data.drop(entry_index).reset_index(drop=True)
-            st.success("Entri telah dihapus.")
-
-    # Menambahkan opsi untuk logout
-    if st.button("Logout"):
-        st.session_state.logged_in = False
-        st.success("Anda telah logout.")
