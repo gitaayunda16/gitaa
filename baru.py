@@ -56,28 +56,26 @@ def process_date_column(data):
     return data
 
 def select_forecasting_method(product_data, steps=3, method='ARIMA'):
-    # Pastikan product_data adalah Series
     if isinstance(product_data, pd.DataFrame):
-        product_data = product_data.squeeze()  # Mengubah DataFrame menjadi Series jika perlu
+        product_data = product_data.squeeze()
 
-    # Cek jumlah data yang tersedia
     n = len(product_data)
 
+    if n == 0:
+        return [0] * steps, "No Data"
+
     if method == 'Naive':
-        if n > 0:
-            return [product_data.iloc[-1]] * steps, "Naive"
-        else:
-            return [0] * steps, "No Data"
+        return [product_data.iloc[-1]] * steps, "Naive"
 
     elif method == 'Moving Average':
         if n < 3:
-            return [product_data.mean()] * steps, "Average"  # Fallback ke rata-rata
+            return [product_data.mean()] * steps, "Average"
         forecast = product_data.rolling(window=3).mean().iloc[-1]
         return [forecast] * steps, "Moving Average"
 
     elif method == 'Exponential Smoothing':
         if n < 3:
-            return [product_data.mean()] * steps, "Average"  # Fallback ke rata-rata
+            return [product_data.mean()] * steps, "Average"
         model = ExponentialSmoothing(product_data, trend='add', seasonal='add', seasonal_periods=12)
         model_fit = model.fit()
         forecast = model_fit.forecast(steps=steps)
@@ -85,7 +83,7 @@ def select_forecasting_method(product_data, steps=3, method='ARIMA'):
 
     elif method == 'Prophet':
         if n < 5:
-            return [product_data.mean()] * steps, "Average"  # Fallback ke rata-rata
+            return [product_data.mean()] * steps, "Average"
         
         prophet_data = pd.DataFrame({
             'ds': product_data.index.to_timestamp(),
@@ -98,49 +96,30 @@ def select_forecasting_method(product_data, steps=3, method='ARIMA'):
         forecast = prophet_model.predict(future)['yhat'].values[-steps:]
         return forecast, "Prophet"
 
-    elif method == 'Random Forest':
+    elif method in ['Random Forest', 'XGBoost']:
         if n < 5:
-            return [product_data.mean()] * steps, "Average"  # Fallback ke rata-rata
+            return [product_data.mean()] * steps, "Average"
         
         df = pd.DataFrame(product_data)
-        df['Month'] = np.arange(len(df))  # Create a time index as a feature
+        df['Month'] = np.arange(len(df))
         X = df[['Month']]
         y = df['Penjualan']  # Assuming 'Penjualan' is the column name
         
-        model = RandomForestRegressor(n_estimators=100, random_state=42)
+        if method == 'Random Forest':
+            model = RandomForestRegressor(n_estimators=100, random_state=42)
+        else:
+            model = XGBRegressor(n_estimators=100, random_state=42)
+        
         model.fit(X, y)
         
         future_months = np.array([[len(df) + i] for i in range(1, steps + 1)])
         forecast = model.predict(future_months)
-        return forecast, "Random Forest"
-
-    elif method == 'XGBoost':
-        if n < 5:
-            return [product_data.mean()] * steps, "Average"  # Fallback ke rata-rata
-        
-        df = pd.DataFrame(product_data)
-        df['Month'] = np.arange(len(df))  # Create a time index as a feature
-        X = df[['Month']]
-        y = df['Penjualan']  # Assuming 'Penjualan' is the column name
-        
-        model = XGBRegressor(n_estimators=100, random_state=42)
-        model.fit(X, y)
-        
-        future_months = np.array([[len(df) + i] for i in range(1, steps + 1)])
-        forecast = model.predict(future_months)
-        return forecast, "XGBoost"
+        return forecast, method
 
     elif method == 'SARIMA':
-        # Parameter SARIMA
-        p = 1  # Order of the autoregressive part
-        d = 1  # Degree of differencing
-        q = 1  # Order of the moving average part
-        P = 1  # Seasonal autoregressive order
-        D = 1  # Seasonal differencing order
-        Q = 1  # Seasonal moving average order
-        s = 12  # Seasonal period (e.g., 12 for monthly data)
+        p, d, q = 1, 1, 1
+        P, D, Q, s = 1, 1, 1, 12
 
-        # Check for stationarity
         result = adfuller(product_data)
         is_stationary = result[1] <= 0.05
 
@@ -150,11 +129,7 @@ def select_forecasting_method(product_data, steps=3, method='ARIMA'):
             forecast = model_fit.forecast(steps=steps)
             return forecast, "SARIMA"
         else:
-            if n > 0:
-                average_forecast = product_data.mean()
-                return [average_forecast] * steps, "Average"
-            else:
-                return [0] * steps, "No Data"
+            return [product_data.mean()] * steps, "Average"
 
     else:
         result = adfuller(product_data)
@@ -166,11 +141,7 @@ def select_forecasting_method(product_data, steps=3, method='ARIMA'):
             forecast = model_fit.forecast(steps=steps)
             return forecast, "ARIMA"
         else:
-            if n > 0:
-                average_forecast = product_data.mean()
-                return [average_forecast] * steps, "Average"
-            else:
-                return [0] * steps, "No Data"
+            return [product_data.mean()] * steps, "Average"
         
 
 #def select_forecasting_method(product_data, steps=3, method='ARIMA'):
