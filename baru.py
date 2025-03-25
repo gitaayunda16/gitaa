@@ -1168,3 +1168,102 @@ else:
                                         fig.update_layout(
                                             xaxis_title='Pelanggan',
                                             yaxis_title='Rata-rata Penjualan',
+                                            xaxis=dict(tickangle=45),
+                                            showlegend=False,
+                                        )
+                            
+                                        st.markdown("Berikut adalah grafik untuk barang yang mengalami kenaikan:")
+                                        st.plotly_chart(fig, use_container_width=True)
+                                    else:
+                                        st.markdown("Tidak ada barang yang mengalami kenaikan.")
+                    
+                        # Add assistant response to chat history
+                        st.session_state.messages.append({"role": "assistant", "content": answer})
+    
+    # Menambahkan opsi untuk mereset seluruh chat history
+    if st.sidebar.button("Reset Chat History"):
+        st.session_state.messages = []  # Clear the chat history
+        st.success("Chat history telah direset. Anda dapat memulai percakapan baru.")
+
+    # Menampilkan data yang telah dimasukkan
+    if st.button("Tampilkan Data"):
+        # Pastikan kolom 'Tanggal' dalam format datetime
+        st.session_state.data['Tanggal'] = pd.to_datetime(st.session_state.data['Tanggal'], errors='coerce')
+        st.session_state.data = st.session_state.data.dropna(subset=['Tanggal'])  # Hapus entri yang tidak valid
+
+        sorted_data = st.session_state.data.sort_values(by=[])   #(by=["Tanggal", "Pelanggan", "Nama Barang", "Kuantitas", "Penjualan", "Kota Pengiriman Pelanggan"])
+        st.write(sorted_data)
+
+    # Menyimpan data ke file CSV
+    if st.button("Simpan Data ke CSV"):
+        st.session_state.data.to_csv("data_akuntansi.csv", index=False)
+        st.success("Data telah disimpan ke file CSV.")
+
+    # Menambahkan fitur untuk menghapus data
+    if st.button("Hapus Data Terakhir"):
+        if not st.session_state.data.empty:
+            st.session_state.data = st.session_state.data[:-1]
+            st.success("Data terakhir telah dihapus.")
+        else:
+            st.warning("Tidak ada data untuk dihapus.")
+
+    # Menambahkan fitur untuk mengedit data
+    if st.button("Edit Data"):
+        edit_index = st.number_input("Masukkan Indeks Data yang Ingin Diedit", min_value=0, max_value=len(st.session_state.data)-1)
+        if edit_index is not None and edit_index < len(st.session_state.data):
+            edited_row = st.session_state.data.iloc[edit_index]
+            new_vendor = st.text_input("Pelanggan", value=edited_row["Pelanggan"])
+            new_barang = st.text_input("Nama Barang", value=edited_row["Nama Barang"])
+            new_amount = st.number_input("Penjualan", value=edited_row["Penjualan"])
+            new_quantity = st.number_input("Kuantitas", value=edited_row["Kuantitas"])
+            new_date = st.date_input("Tanggal", value=edited_row["Tanggal"])
+            
+            if st.button("Simpan Perubahan"):
+                st.session_state.data.at[edit_index, "Pelanggan"] = new_vendor
+                st.session_state.data.at[edit_index, "Nama Barang"] = new_barang
+                st.session_state.data.at[edit_index, "Penjualan"] = new_amount
+                st.session_state.data.at[edit_index, "Kuantitas"] = new_quantity
+                st.session_state.data.at[edit_index, "Tanggal"] = new_date
+                st.success("Data telah diperbarui.")
+
+    # Menambahkan fitur untuk menampilkan ringkasan laporan
+    if st.button("Tampilkan Ringkasan Laporan"):
+        if not st.session_state.data.empty:
+            summary = st.session_state.data.groupby("Tipe Transaksi").agg({"Penjualan": "sum", "Kuantitas": "sum"}).reset_index()
+            st.write("Ringkasan Laporan:")
+            st.dataframe(summary)
+        else:
+            st.warning("Tidak ada data untuk ditampilkan.")
+
+    # Opsi untuk menghapus data
+    st.sidebar.subheader("Hapus Data")
+    if st.sidebar.button("Hapus Semua Data"):
+        st.session_state.data = pd.DataFrame(columns=["Pelanggan", "Tanggal", "Tipe Transaksi", "Nama Barang", "Kuantitas", "Penjualan"])
+        st.success("Semua data telah dihapus.")
+
+    # Panggil fungsi untuk menyimpan data ke database
+    if st.button("Simpan Data ke Database"):
+        save_data_to_database(st.session_state.data)
+        st.success("Data telah disimpan ke database.")
+
+    # Menambahkan fitur untuk menampilkan data terbaru
+    if st.button("Tampilkan Data Terbaru"):
+        if not st.session_state.data.empty:
+            latest_data = st.session_state.data.tail(5)
+            st.write("Data Terbaru:")
+            st.dataframe(latest_data)
+        else:
+            st.warning("Tidak ada data untuk ditampilkan.")
+
+    # Menambahkan opsi untuk menghapus entri tertentu
+    st.sidebar.subheader("Hapus Entri Tertentu")
+    if not st.session_state.data.empty:
+        entry_index = st.sidebar.number_input("Pilih Indeks Entri untuk Dihapus", min_value=0, max_value=len(st.session_state.data)-1, step=1)
+        if st.sidebar.button("Hapus Entri"):
+            st.session_state.data = st.session_state.data.drop(entry_index).reset_index(drop=True)
+            st.success("Entri telah dihapus.")
+
+    # Menambahkan opsi untuk logout
+    if st.button("Logout"):
+        st.session_state.logged_in = False
+        st.success("Anda telah logout.")
