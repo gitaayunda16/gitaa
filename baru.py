@@ -18,8 +18,6 @@ from langchain_core.prompts import ChatPromptTemplate
 import plotly.express as px
 import re
 
-
-
 # Koneksi ke database SQLite
 def create_connection():
     conn = sqlite3.connect("forecasting_results.db")
@@ -130,23 +128,38 @@ def select_forecasting_method(product_data, steps=3, method='ARIMA'):
         return forecast, "XGBoost"
     
     else:
-        # Check for stationarity for ARIMA
         result = adfuller(product_data)
-        is_stationary = result[1] <= 0.05  # p-value <= 0.05 indicates stationarity
+        is_stationary = result[1] <= 0.05
 
         if is_stationary:
-            # Fit ARIMA model
-            model = ARIMA(product_data, order=(1, 1, 1))  # Adjust (p, d, q) as needed
+            model = ARIMA(product_data, order=(1, 1, 1))
             model_fit = model.fit()
             forecast = model_fit.forecast(steps=steps)
             return forecast, "ARIMA"
         else:
-            # If data is not stationary, fallback to average
             if len(product_data) > 0:
                 average_forecast = product_data.mean()
                 return [average_forecast] * steps, "Average"
             else:
                 return [0] * steps, "No Data"
+                
+        # Check for stationarity for ARIMA
+        #result = adfuller(product_data)
+        #is_stationary = result[1] <= 0.05  # p-value <= 0.05 indicates stationarity
+
+        #if is_stationary:
+            # Fit ARIMA model
+        #    model = ARIMA(product_data, order=(1, 1, 1))  # Adjust (p, d, q) as needed
+        #    model_fit = model.fit()
+        #    forecast = model_fit.forecast(steps=steps)
+        #    return forecast, "ARIMA"
+        #else:
+            # If data is not stationary, fallback to average
+        #    if len(product_data) > 0:
+        #        average_forecast = product_data.mean()
+        #        return [average_forecast] * steps, "Average"
+        #    else:
+        #        return [0] * steps, "No Data"
 
 def chat(contexts, history, question):
     API_KEY = "AIzaSyAPUF_xOkqVUj7aWX_bXO_8cV6R9-xpQ4Y"  
@@ -1188,8 +1201,8 @@ else:
     # Menampilkan data yang telah dimasukkan
     if st.button("Tampilkan Data"):
         # Pastikan kolom 'Tanggal' dalam format datetime
-        st.session_state.data['Tanggal'] = pd.to_datetime(st.session_state.data['Tanggal'], errors='coerce')
-        st.session_state.data = st.session_state.data.dropna(subset=['Tanggal'])  # Hapus entri yang tidak valid
+        #st.session_state.data['Tanggal'] = pd.to_datetime(st.session_state.data['Tanggal'], errors='coerce')
+        #st.session_state.data = st.session_state.data.dropna(subset=['Tanggal'])  # Hapus entri yang tidak valid
 
         sorted_data = st.session_state.data.sort_values(by=[])   #(by=["Tanggal", "Pelanggan", "Nama Barang", "Kuantitas", "Penjualan", "Kota Pengiriman Pelanggan"])
         st.write(sorted_data)
