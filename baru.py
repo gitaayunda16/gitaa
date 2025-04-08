@@ -193,6 +193,37 @@ def display_forecast_with_events(forecast_df):
         forecast_df['Event'] = forecast_df['Event'].apply(lambda x: 'Ada Event' if x else 'Tidak Ada Event')
         st.dataframe(forecast_df)
 
+def analyze_event_impact(monthly_data, event_dates):
+    event_impact = {}
+    
+    for product in monthly_data['Nama Barang'].unique():
+        product_data = monthly_data[monthly_data['Nama Barang'] == product]
+        product_data['Bulan'] = product_data['Tanggal'].dt.to_period('M')
+        
+        for event_name, dates in event_dates.items():
+            for event_date in dates:
+                # Check if the event date is in the product's data
+                if event_date in product_data['Tanggal'].values:
+                    # Get the month before and after the event
+                    event_month = event_date.to_period('M')
+                    previous_month = event_month - 1
+                    next_month = event_month + 1
+                    
+                    # Calculate sales for the previous and next month
+                    previous_sales = product_data[product_data['Bulan'] == previous_month]['Penjualan'].sum()
+                    event_sales = product_data[product_data['Bulan'] == event_month]['Penjualan'].sum()
+                    next_sales = product_data[product_data['Bulan'] == next_month]['Penjualan'].sum()
+                    
+                    # Check if there was an increase
+                    if event_sales > previous_sales:
+                        if product not in event_impact:
+                            event_impact[product] = {'increase': True, 'event_name': event_name}
+                    if next_sales > event_sales:
+                        if product not in event_impact:
+                            event_impact[product] = {'increase': True, 'event_name': event_name}
+    
+    return event_impact
+
 def chat(contexts, history, question):
     API_KEY = "AIzaSyAPUF_xOkqVUj7aWX_bXO_8cV6R9-xpQ4Y"  
     llm = ChatGoogleGenerativeAI(
@@ -379,30 +410,32 @@ else:
             # Forecasting for each product
             # Forecasting for each product
             forecast_results = []
+            # Inside your forecasting loop
+            event_impact = analyze_event_impact(monthly_data, event_dates)
+            
             for product in monthly_data['Nama Barang'].unique():
                 product_sales_data = monthly_data[monthly_data['Nama Barang'] == product].groupby('Bulan')['Penjualan'].sum()
                 product_quantity_data = monthly_data[monthly_data['Nama Barang'] == product].groupby('Bulan')['Kuantitas'].sum()
-            
+                
                 if product_sales_data.nunique() <= 1 or product_quantity_data.nunique() <= 1:
                     continue  # Skip to the next product
-            
+                
                 try:
                     sales_forecast, method_used_sales = select_forecasting_method(product_sales_data, steps=forecast_months, method=forecasting_method)
                     quantity_forecast, method_used_quantity = select_forecasting_method(product_quantity_data, steps=forecast_months, method=forecasting_method)
-            
+                    
                     for month_offset in range(forecast_months):
-                        # Cek apakah ada event pada bulan peramalan
                         forecast_date = (monthly_data['Bulan'].max() + month_offset + 1).to_timestamp().date()
                         event_occurred = any(forecast_date in event for event in event_dates.values())
-            
+                        
                         forecast_value_sales = sales_forecast[month_offset]
                         forecast_value_quantity = quantity_forecast[month_offset]
-            
-                        # Jika ada event, tambahkan persentase kenaikan
-                        if event_occurred:
-                            forecast_value_sales *= 1.1  # Misalnya, tambahkan 10% jika ada event
-                            forecast_value_quantity *= 1.1  # Tambahkan 10% pada kuantitas jika ada event
-            
+                        
+                        # Check if the product has shown an increase during events
+                        if product in event_impact and event_occurred:
+                            forecast_value_sales *= 1.1  # Increase by 10% if the product has shown an increase during events
+                            forecast_value_quantity *= 1.1  # Increase by 10% on quantity
+                        
                         forecast_results.append({
                             'Nama Barang': product,
                             'Tanggal': forecast_date,
@@ -412,7 +445,6 @@ else:
                         })
                 except ValueError:
                     continue  # Skip this product if there is an error during forecasting
-            
             # Convert the results into a DataFrame
             forecast_df = pd.DataFrame(forecast_results)
             display_forecast_with_events(forecast_df)  # Menampilkan hasil forecasting dengan event
@@ -1183,9 +1215,9 @@ else:
             # Hitung total kuantitas harian
             grouped = df.groupby(['Kota', 'Customer', 'Tanggal'])['Kuantitas'].sum().reset_index()
     
-            # Sidebar filter untuk memilih kota
-            kota_terpilih = st.selectbox("Pilih Kota", sorted(df['Kota'].unique()))
-            df_kota = grouped[grouped['Kota'] == kota_terpilih]
+            # Sidebar filter untuk memilih kota (menggunakan lower case untuk menghindari duplikasi)
+            kota_terpilih = st.selectbox("Pilih Kota", sorted(grouped['Kota'].str.lower().unique()))
+            df_kota = grouped[grouped['Kota'].str.lower() == kota_terpilih]
     
             # Menambahkan kolom perkembangan
             df_kota.sort_values(by=['Customer', 'Tanggal'], inplace=True)
@@ -1197,13 +1229,13 @@ else:
             )
     
             # Menampilkan semua pelanggan dan perkembangan mereka di kota terpilih
-            st.subheader(f"Pelanggan di Kota {kota_terpilih}")
+            st.write(f"Pelanggan di Kota {kota_terpilih.capitalize()}")
             st.dataframe(df_kota[['Customer', 'Tanggal', 'Kuantitas', 'Status Perkembangan']], use_container_width=True)
     
             # Membuat grafik untuk semua pelanggan di kota terpilih
-            st.subheader("Grafik Perkembangan Kuantitas Semua Pelanggan")
+            st.write("Grafik Perkembangan Kuantitas Pelanggan")
             fig_all = px.line(df_kota, x='Tanggal', y='Kuantitas', color='Customer', markers=True,
-                              title=f'Perkembangan Kuantitas Semua Pelanggan di {kota_terpilih}')
+                              title=f'Perkembangan Kuantitas Pelanggan di {kota_terpilih.capitalize()}')
             fig_all.update_layout(xaxis_title="Tanggal", yaxis_title="Kuantitas", title_x=0.5)
             st.plotly_chart(fig_all)
     
@@ -1212,16 +1244,16 @@ else:
                 customer_terpilih = st.selectbox("Pilih Customer untuk Detail", sorted(df_kota['Customer'].unique()))
                 df_cust = df_kota[df_kota['Customer'] == customer_terpilih]
     
-                st.subheader(f"Grafik Perubahan Kuantitas - {customer_terpilih} di {kota_terpilih}")
+                st.write(f"Grafik Perubahan Kuantitas - {customer_terpilih} di {kota_terpilih.capitalize()}")
     
                 # Membuat grafik interaktif untuk customer yang dipilih
                 fig_cust = px.line(df_cust, x='Tanggal', y='Kuantitas', markers=True,
-                                   title=f'Perubahan Kuantitas {customer_terpilih}')
+                                   title=f'Perkembangan Kuantitas {customer_terpilih}')
                 fig_cust.update_layout(xaxis_title="Tanggal", yaxis_title="Kuantitas", title_x=0.5)
                 st.plotly_chart(fig_cust)
     
                 st.markdown("---")
-                st.subheader("📄 Data Rinci untuk Customer Terpilih")
+                st.write("Data Rinci untuk Customer Terpilih")
                 st.dataframe(df_cust[['Tanggal', 'Kuantitas', 'Status Perkembangan']], use_container_width=True)
     
         else:
