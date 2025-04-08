@@ -296,6 +296,7 @@ else:
     ])
 
     # Fungsi Unggah Data
+   # Fungsi Unggah Data
     if menu == "Unggah Data":
         st.subheader("Unggah Data dari File")
         uploaded_file = st.file_uploader("Pilih file CSV atau Excel", type=["csv", "xlsx"])
@@ -305,23 +306,25 @@ else:
                 new_data = pd.read_csv(uploaded_file)
             else:
                 new_data = pd.read_excel(uploaded_file)
-        
+            
             # Validasi kolom
             required_columns = []  # Ganti dengan kolom yang diperlukan
             has_date_column = 'Tanggal' in new_data.columns
-        
+            
+            # Mengonversi kolom 'Tanggal' menjadi datetime jika ada
+            if has_date_column:
+                new_data['Tanggal'] = pd.to_datetime(new_data['Tanggal'], errors='coerce')
+            
+            # Memeriksa apakah semua kolom yang diperlukan ada
             if all(col in new_data.columns for col in required_columns):
-                new_data = process_date_column(new_data)
-                
-                if not has_date_column:
-                    st.warning("Kolom 'Tanggal' tidak ditemukan. Data akan tetap dimasukkan tanpa kolom 'Tanggal'.")
-        
                 # Menambahkan kolom event
                 new_data = add_event_column(new_data)
-        
+                
                 # Menggabungkan data yang diunggah dengan data yang sudah ada
                 st.session_state.data = pd.concat([st.session_state.data, new_data], ignore_index=True)
                 st.success("Data berhasil diunggah dan ditambahkan.")
+            else:
+                st.warning("Data tidak lengkap. Pastikan semua kolom yang diperlukan ada.")
     
     # Fungsi Akuntansi Utang
     #elif menu == "Akuntansi Utang":
@@ -1212,8 +1215,8 @@ else:
                 'Pelanggan': 'Customer'
             }, inplace=True)
     
-            # Hitung total kuantitas harian
-            grouped = df.groupby(['Kota', 'Customer', 'Tanggal'])['Kuantitas'].sum().reset_index()
+            # Hitung total kuantitas bulanan
+            grouped = df.groupby(['Kota', 'Customer', pd.Grouper(key='Tanggal', freq='M')])['Kuantitas'].sum().reset_index()
     
             # Sidebar filter untuk memilih kota (menggunakan lower case untuk menghindari duplikasi)
             kota_terpilih = st.selectbox("Pilih Kota", sorted(grouped['Kota'].str.lower().unique()))
@@ -1236,7 +1239,15 @@ else:
             st.write("Grafik Perkembangan Kuantitas Pelanggan")
             fig_all = px.line(df_kota, x='Tanggal', y='Kuantitas', color='Customer', markers=True,
                               title=f'Perkembangan Kuantitas Pelanggan di {kota_terpilih.capitalize()}')
-            fig_all.update_layout(xaxis_title="Tanggal", yaxis_title="Kuantitas", title_x=0.5)
+    
+            # Mengatur sumbu x untuk menampilkan semua bulan
+            fig_all.update_xaxes(
+                tickvals=df_kota['Tanggal'],  # Menggunakan semua tanggal yang ada
+                ticktext=[date.strftime('%b %Y') for date in df_kota['Tanggal']],  # Format bulan dan tahun
+                title_text="Bulan dan Tahun"  # Judul sumbu x
+            )
+            
+            fig_all.update_layout(yaxis_title="Kuantitas", title_x=0.5)
             st.plotly_chart(fig_all)
     
             # Sidebar filter untuk memilih customer
@@ -1249,7 +1260,15 @@ else:
                 # Membuat grafik interaktif untuk customer yang dipilih
                 fig_cust = px.line(df_cust, x='Tanggal', y='Kuantitas', markers=True,
                                    title=f'Perkembangan Kuantitas {customer_terpilih}')
-                fig_cust.update_layout(xaxis_title="Tanggal", yaxis_title="Kuantitas", title_x=0.5)
+                
+                # Mengatur sumbu x untuk menampilkan semua bulan
+                fig_cust.update_xaxes(
+                    tickvals=df_cust['Tanggal'],  # Menggunakan semua tanggal yang ada
+                    ticktext=[date.strftime('%b %Y') for date in df_cust['Tanggal']],  # Format bulan dan tahun
+                    title_text="Bulan dan Tahun"  # Judul sumbu x
+                )
+                
+                fig_cust.update_layout(yaxis_title="Kuantitas", title_x=0.5)
                 st.plotly_chart(fig_cust)
     
                 st.markdown("---")
@@ -1257,7 +1276,7 @@ else:
                 st.dataframe(df_cust[['Tanggal', 'Kuantitas', 'Status Perkembangan']], use_container_width=True)
     
         else:
-            st.warning("Tidak ada data yang dimuat. Silakan pastikan data sudah tersedia di menu awal.")
+            st.warning("Tidak ada data yang dim uat. Silakan pastikan data sudah tersedia di menu awal.")
 
 
     # Menambahkan opsi untuk mereset seluruh chat history
