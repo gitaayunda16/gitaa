@@ -964,29 +964,29 @@ else:
                         # Menampilkan grafik di Streamlit
                         st.plotly_chart(fig, use_container_width=True)
 
-                    threshold = st.number_input("Masukkan Ambang Batas untuk Deteksi Lonjakan", min_value=1.0, value=1.5)
+                    #threshold = st.number_input("Masukkan Ambang Batas untuk Deteksi Lonjakan", min_value=1.0, value=1.5)
 
-                    if st.button("Deteksi Lonjakan Penjualan"):
-                        if 'data' in st.session_state and not st.session_state.data.empty:
-                            sales_data = st.session_state.data.groupby('Tanggal')['Penjualan'].sum()
-                            spikes = detect_sales_spikes(sales_data, threshold)
+                    #if st.button("Deteksi Lonjakan Penjualan"):
+                        #if 'data' in st.session_state and not st.session_state.data.empty:
+                            #sales_data = st.session_state.data.groupby('Tanggal')['Penjualan'].sum()
+                            #spikes = detect_sales_spikes(sales_data, threshold)
                                 
-                            if not spikes.empty:
-                                st.write("Lonjakan Penjualan Terdeteksi:")
-                                st.dataframe(spikes)
+                            #if not spikes.empty:
+                                #st.write("Lonjakan Penjualan Terdeteksi:")
+                                #st.dataframe(spikes)
                                     
-                                plt.figure(figsize=(12, 6))
-                                plt.plot(sales_data.index, sales_data, label='Penjualan', color='blue')
-                                plt.scatter(spikes.index, spikes, color='red', label='Lonjakan Penjualan', marker='o')
-                                plt.title('Analisis Penjualan dan Deteksi Lonjakan')
-                                plt.xlabel('Tanggal')
-                                plt.ylabel('Penjualan')
-                                plt.legend()
-                                st.pyplot(plt)
-                            else:
-                                st.write("Tidak ada lonjakan penjualan yang terdeteksi.")
-                        else:
-                            st.warning("Data penjualan tidak tersedia untuk analisis.")
+                                #plt.figure(figsize=(12, 6))
+                                #plt.plot(sales_data.index, sales_data, label='Penjualan', color='blue')
+                                #plt.scatter(spikes.index, spikes, color='red', label='Lonjakan Penjualan', marker='o')
+                                #plt.title('Analisis Penjualan dan Deteksi Lonjakan')
+                                #plt.xlabel('Tanggal')
+                                #plt.ylabel('Penjualan')
+                                #plt.legend()
+                                #st.pyplot(plt)
+                            #else:
+                                #st.write("Tidak ada lonjakan penjualan yang terdeteksi.")
+                        #else:
+                            #st.warning("Data penjualan tidak tersedia untuk analisis.")
 
                     # Menyimpan DataFrame hasil peramalan ke dalam session state
                     st.session_state.forecast_df = forecast_df
