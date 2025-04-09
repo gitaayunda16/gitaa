@@ -18,7 +18,7 @@ import io
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import ChatPromptTemplate
 import plotly.express as px
-import re
+#import re
 
 # Koneksi ke database SQLite
 def create_connection():
@@ -63,6 +63,7 @@ def get_event_dates(year):
         'Idul Fitri': [],
         'Idul Adha': [],
         'Tahun Baru': [],
+        'Natal': [], 
     }
     for date, name in id_holidays.items():
         if 'Idul Fitri' in name:
@@ -71,6 +72,8 @@ def get_event_dates(year):
             event_dates['Idul Adha'].append(date)
         elif 'Tahun Baru' in name:
             event_dates['Tahun Baru'].append(date)
+        elif 'Natal' in name:
+            event_dates['Natal'].append(date)
     return event_dates
 
 # Mendapatkan event untuk tahun ini
@@ -83,12 +86,12 @@ def add_event_column(data):
     data['Event'] = data['Tanggal'].apply(lambda x: any(x.date() in event for event in event_dates.values()))
     return data
 
-def detect_sales_spikes(sales_data, threshold=1.5):
-    mean_sales = sales_data.mean()
-    std_sales = sales_data.std()
-    upper_limit = mean_sales + (threshold * std_sales)
-    spikes = sales_data[sales_data > upper_limit]
-    return spikes
+#def detect_sales_spikes(sales_data, threshold=1.5):
+    #mean_sales = sales_data.mean()
+    #std_sales = sales_data.std()
+    #upper_limit = mean_sales + (threshold * std_sales)
+    #spikes = sales_data[sales_data > upper_limit]
+    #return spikes
 
 def select_forecasting_method(product_data, steps=3, method='ARIMA'):
     if isinstance(product_data, pd.DataFrame):
@@ -289,8 +292,6 @@ else:
     # Menu untuk memilih fungsi
     menu = st.sidebar.selectbox("Pilih Fungsi", [
         "Unggah Data",
-        #"Akuntansi Utang",
-        #"Akuntansi Piutang",
         "Penganggaran dan Peramalan",
         "Statistik"
     ])
@@ -325,58 +326,6 @@ else:
                 st.success("Data berhasil diunggah dan ditambahkan.")
             else:
                 st.warning("Data tidak lengkap. Pastikan semua kolom yang diperlukan ada.")
-    
-    # Fungsi Akuntansi Utang
-    #elif menu == "Akuntansi Utang":
-        #st.subheader("Akuntansi Utang")
-        #vendor = st.text_input("Pelanggan")
-        #barang = st.text_input("Nama Barang")
-        #amount = st.number_input("Jumlah Pembayaran", min_value=0.0)
-        #quantity = st.number_input("Kuantitas", min_value=1)
-        #due_date = st.date_input("Tanggal Jatuh Tempo", datetime.today())
-        #city = st.text_input("Kota Pengiriman Pelanggan")
-        
-        #if st.button("Simpan Pembayaran"):
-            #if vendor and barang and amount > 0 and quantity > 0:
-                #new_row = pd.DataFrame({
-                    #"Tipe Transaksi": ["Pengeluaran"],
-                    #"Pelanggan": [vendor],
-                    #"Nama Barang": [barang],
-                    #"Penjualan": [-amount],
-                    #"Kuantitas": [quantity],
-                    #"Tanggal": [due_date],
-                    #"Kota Pengiriman Pelanggan": [city]
-                #})
-                #st.session_state.data = pd.concat([st.session_state.data, new_row], ignore_index=True)
-                #st.success(f"Pembayaran sebesar {amount} kepada {vendor} untuk {barang} dijadwalkan pada {due_date}.")
-            #else:
-                #st.error("Silakan masukkan semua informasi yang diperlukan.")
-
-    # Fungsi Akuntansi Piutang
-    #elif menu == "Akuntansi Piutang":
-        #st.subheader("Akuntansi Piutang")
-        #customer = st.text_input("Pelanggan")
-        #barang1 = st.text_input("Nama Barang")
-        #amount = st.number_input("Jumlah Penerimaan", min_value=0.0)
-        #quantity = st.number_input("Kuantitas", min_value=1)
-        #invoice_date = st.date_input(" Tanggal Faktur", datetime.today())
-        #city1 = st.text_input("Kota Pengiriman Pelanggan")
-        
-        #if st.button("Simpan Penerimaan"):
-            #if customer and barang1 and amount > 0 and quantity > 0:
-                #new_row = pd.DataFrame({
-                    #"Tipe Transaksi": ["Pemasukan"],
-                    #"Pelanggan": [customer],
-                    #"Nama Barang": [barang1],
-                    #"Penjualan": [amount],
-                    #"Kuantitas": [quantity],
-                    #"Tanggal": [invoice_date],
-                    #"Kota Pengiriman Pelanggan": [city1]
-                #})
-                #st.session_state.data = pd.concat([st.session_state.data, new_row], ignore_index=True)
-                #st.success(f"Penerimaan sebesar {amount} dari {customer} untuk {barang1} pada {invoice_date}.")
-            #else:
-                #st.error("Silakan masukkan semua informasi yang diperlukan.")
 
     # Fungsi Penganggaran dan Peramalan
     elif menu == "Penganggaran dan Peramalan":
@@ -408,9 +357,8 @@ else:
             forecast_months = st.number_input("Jumlah Bulan untuk Peramalan", min_value=1, max_value=12, value=3)
     
             # Pilih metode peramalan
-            forecasting_method = st.selectbox("Pilih Metode Peramalan", ["ARIMA", "Exponential Smoothing", "Moving Average", "Naive", "Prophet", "Average"])
+            forecasting_method = st.selectbox("Pilih Metode Peramalan", ["SARIMA", "ARIMA", "Exponential Smoothing", "Moving Average", "Naive", "Prophet", "Average"])
     
-            # Forecasting for each product
             # Forecasting for each product
             forecast_results = []
             # Inside your forecasting loop
