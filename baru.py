@@ -18,7 +18,7 @@ import io
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import ChatPromptTemplate
 import plotly.express as px
-#import re
+import re
 
 # Koneksi ke database SQLite
 def create_connection():
@@ -297,7 +297,8 @@ else:
     ])
 
     # Fungsi Unggah Data
-   # Fungsi Unggah Data
+
+    # Fungsi Unggah Data
     if menu == "Unggah Data":
         st.subheader("Unggah Data dari File")
         uploaded_file = st.file_uploader("Pilih file CSV atau Excel", type=["csv", "xlsx"])
@@ -320,10 +321,9 @@ else:
             if all(col in new_data.columns for col in required_columns):
                 # Menambahkan kolom event
                 new_data = add_event_column(new_data)
-                
                 # Menggabungkan data yang diunggah dengan data yang sudah ada
                 st.session_state.data = pd.concat([st.session_state.data, new_data], ignore_index=True)
-                st.success("Data berhasil diunggah dan ditambahkan.")
+                st.success("Data berhasil diunggah, distandarisasi, dan ditambahkan.")
             else:
                 st.warning("Data tidak lengkap. Pastikan semua kolom yang diperlukan ada.")
 
@@ -357,7 +357,7 @@ else:
             forecast_months = st.number_input("Jumlah Bulan untuk Peramalan", min_value=1, max_value=12, value=3)
     
             # Pilih metode peramalan
-            forecasting_method = st.selectbox("Pilih Metode Peramalan", ["SARIMA", "ARIMA", "Exponential Smoothing", "Moving Average", "Naive", "Prophet", "Average"])
+            forecasting_method = st.selectbox("Pilih Metode Peramalan", ["ARIMA", "SARIMA", "Exponential Smoothing", "Moving Average", "Naive", "Prophet", "Average"])
     
             # Forecasting for each product
             forecast_results = []
