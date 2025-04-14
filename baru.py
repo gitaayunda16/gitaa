@@ -354,11 +354,17 @@ else:
             st.dataframe(monthly_summary)
     
             # Input jumlah bulan untuk peramalan
-            forecast_months = st.number_input("Jumlah Bulan untuk Peramalan", min_value=1, max_value=12, value=3)
+            #forecast_months = st.number_input("Jumlah Bulan untuk Peramalan", min_value=1, max_value=12, value=3)
     
             # Pilih metode peramalan
-            forecasting_method = st.selectbox("Pilih Metode Peramalan", ["ARIMA", "SARIMA", "Exponential Smoothing", "Moving Average", "Naive", "Prophet", "Average"])
-    
+            #forecasting_method = st.selectbox("Pilih Metode Peramalan", ["ARIMA", "SARIMA", "Exponential Smoothing", "Moving Average", "Naive", "Prophet", "Average"])
+
+            # Input jumlah bulan untuk peramalan
+            forecast_months = st.number_input("Jumlah Bulan untuk Peramalan", min_value=1, max_value=12, value=3, key="forecast_months_input")
+            
+            # Pilih metode peramalan
+            forecasting_method = st.selectbox("Pilih Metode Peramalan", ["ARIMA", "SARIMA", "Exponential Smoothing", "Moving Average", "Naive", "Prophet", "Average"], key="forecasting_method_input")
+            
             # Forecasting for each product
             forecast_results = []
             # Inside your forecasting loop
@@ -566,85 +572,214 @@ else:
             )
 
             # Forecasting for each customer
-            customer_forecast_results = []
+            # Forecasting for each customer
+            #customer_forecast_results = []
+            
+            #for customer in monthly_data['Pelanggan'].unique():
+                #customer_data = monthly_data[monthly_data['Pelanggan'] == customer].groupby('Bulan')['Penjualan'].sum()
+                #customer_quantity = monthly_data[monthly_data['Pelanggan'] == customer].groupby('Bulan')['Kuantitas'].sum()
+            
+                # Check if customer_data has enough variation
+                #if customer_data.nunique() <= 1 or customer_quantity.nunique() <= 1:
+                    #continue  # Skip to the next customer
+            
+                #try:
+                     #Forecast sales and quantity
+                    #customer_forecast, method_used_customer = select_forecasting_method(customer_data, steps=forecast_months, method=forecasting_method)
+                    #quantity_forecast, method_used_quantity = select_forecasting_method(customer_quantity, steps=forecast_months, method=forecasting_method)
+            
+                    # Get the last month in the data and calculate the forecast start date
+                    #last_month = customer_data.index.max()  # Get the last month in the data
+                    #forecast_start_date = last_month + 1  # Start from the next month
+            
+                    # Store the results in a list
+                    #for month_offset in range(forecast_months):
+                        #forecast_date = (forecast_start_date + month_offset).to_timestamp()  # Calculate the forecast date
+                        
+                        # Introduce variability to the forecasted values
+                        #forecast_value_sales = customer_forecast[month_offset] * (1 + np.random.uniform(-0.05, 0.05))  # Add variability
+                        #forecast_value_quantity = quantity_forecast[month_offset] * (1 + np.random.uniform(-0.05, 0.05))  # Add variability
+                        
+                        #customer_forecast_results.append({
+                            #'Pelanggan': customer,
+                            #'Tanggal': forecast_date,
+                            #'Kuantitas': int(forecast_value_quantity),
+                            #'Penjualan': forecast_value_sales
+                        #})
+                #except ValueError:
+                    #continue  # Skip this customer if there is an error during forecasting
+            
+            # Convert the results into a DataFrame
+            #customer_forecast_df = pd.DataFrame(customer_forecast_results)
+            
+            # Remove duplicates if any
+            #customer_forecast_df = customer_forecast_df.drop_duplicates(subset=['Pelanggan', 'Tanggal'])
+            
+            #if not customer_forecast_df.empty:
+                #st.write("Hasil Peramalan Transaksi Pelanggan:")
+                #customer_forecast_df_display = customer_forecast_df.copy()
+                #customer_forecast_df_display['Penjualan'] = customer_forecast_df_display['Penjualan'].apply(lambda x: f"{x:,.2f}")
+                #customer_forecast_df_display['Tanggal'] = customer_forecast_df_display['Tanggal'].dt.strftime('%d-%m-%y')
+                #st.dataframe(customer_forecast_df_display)
+            
+                # Simpan dalam Excel dengan format rapi
+                #excel_buffer = io.BytesIO()
+                #with pd.ExcelWriter(excel_buffer, engine="xlsxwriter") as writer:
+                    #customer_forecast_df.to_excel(writer, index=False, sheet_name="Hasil Peramalan Pelanggan")
+            
+                    # Dapatkan workbook dan worksheet
+                    #workbook = writer.book
+                    #worksheet = writer.sheets["Hasil Peramalan Pelanggan"]
+            
+                    # Atur lebar kolom untuk menghindari ####
+                    #worksheet.set_column('A:A', 25)  # Atur lebar kolom untuk 'Pelanggan'
+                    #worksheet.set_column('B:B', 15)  # Atur lebar kolom untuk 'Kuantitas'
+                    #worksheet.set_column('C:C', 15)  # Atur lebar kolom untuk 'Penjualan'
+            
+                # Menyediakan tombol download untuk file Excel
+                #st.download_button(
+                    #label="Download Hasil Peramalan Pelanggan (Excel)",
+                    #data=excel_buffer.getvalue(),
+                    #file_name="hasil_peramalan_pelanggan.xlsx",
+                    #mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                #)
 
+            # Forecasting for each customer
+            #customer_forecast_results = []
+            
+            #for customer in monthly_data['Pelanggan'].unique():
+                #customer_data = monthly_data[monthly_data['Pelanggan'] == customer].groupby('Bulan')['Penjualan'].sum()
+                #customer_quantity = monthly_data[monthly_data['Pelanggan'] == customer].groupby('Bulan')['Kuantitas'].sum()
+            
+                # Check if customer_data has enough variation
+                #if customer_data.nunique() <= 1 or customer_quantity.nunique() <= 1:
+                    #continue  # Skip to the next customer
+            
+                #try:
+                     #Forecast sales and quantity
+                    #customer_forecast, method_used_customer = select_forecasting_method(customer_data, steps=forecast_months, method=forecasting_method)
+                    #quantity_forecast, method_used_quantity = select_forecasting_method(customer_quantity, steps=forecast_months, method=forecasting_method)
+            
+                    # Get the last month in the data and calculate the forecast start date
+                    #last_month = customer_data.index.max()  # Get the last month in the data
+                    #forecast_start_date = last_month + 1  # Start from the next month
+            
+                    # Store the results in a list
+                    #for month_offset in range(forecast_months):
+                        #forecast_date = (forecast_start_date + month_offset).to_timestamp()  # Calculate the forecast date
+                        
+                         #Introduce variability to the forecasted values
+                        #forecast_value_sales = customer_forecast[month_offset] * (1 + np.random.uniform(-0.1, 0.1))  # Add variability
+                        #forecast_value_quantity = quantity_forecast[month_offset] * (1 + np.random.uniform(-0.1, 0.1))  # Add variability
+                        
+                        # Ensure distinct values by checking for duplicates
+                        #while any((forecast_value_sales == res['Penjualan'] and forecast_date == res['Tanggal']) for res in customer_forecast_results):
+                            #forecast_value_sales += np.random.randint(1, 5)  # Adjust the sales forecast slightly
+                            #forecast_value_quantity += np.random.randint(1, 5)  # Adjust the quantity forecast slightly
+                        
+                        #customer_forecast_results.append({
+                            #'Pelanggan': customer,
+                            #'Tanggal': forecast_date,
+                            #'Kuantitas': int(forecast_value_quantity),
+                            #'Penjualan': forecast_value_sales
+                        #})
+                #except ValueError:
+                    #continue  # Skip this customer if there is an error during forecasting
+            
+            # Convert the results into a DataFrame
+            #customer_forecast_df = pd.DataFrame(customer_forecast_results)
+            
+            # Remove duplicates if any
+            #customer_forecast_df = customer_forecast_df.drop_duplicates(subset=['Pelanggan', 'Tanggal'])
+            
+            #if not customer_forecast_df.empty:
+                #st.write("Hasil Peramalan Transaksi Pelanggan:")
+                #customer_forecast_df_display = customer_forecast_df.copy()
+                #customer_forecast_df_display['Penjualan'] = customer_forecast_df_display['Penjualan'].apply(lambda x: f"{x:,.2f}")
+                #customer_forecast_df_display['Tanggal'] = customer_forecast_df_display['Tanggal'].dt.strftime('%d-%m-%y')
+                #st.dataframe(customer_forecast_df_display)
+            
+                # Simpan dalam Excel dengan format rapi
+                #excel_buffer = io.BytesIO()
+                #with pd.ExcelWriter(excel_buffer, engine="xlsxwriter") as writer:
+                    #customer_forecast_df.to_excel(writer, index=False, sheet_name="Hasil Peramalan Pelanggan")
+            
+                    # Dapatkan workbook dan worksheet
+                    #workbook = writer.book
+                    #worksheet = writer.sheets["Hasil Peramalan Pelanggan"]
+            
+                    # Atur lebar kolom untuk menghindari ####
+                    #worksheet.set_column('A:A', 25)  # Atur lebar kolom untuk 'Pelanggan'
+                    #worksheet.set_column('B:B', 15)  # Atur lebar kolom untuk 'Kuantitas'
+                    #worksheet.set_column('C:C', 15)  # Atur lebar kolom untuk 'Penjualan'
+            
+                # Menyediakan tombol download untuk file Excel
+                #st.download_button(
+                    #label="Download Hasil Peramalan Pelanggan (Excel)",
+                    #data=excel_buffer.getvalue(),
+                    #file_name="hasil_peramalan_pelanggan.xlsx", 
+                    #mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                #)
+
+            # Forecasting for each customer
+            customer_forecast_results = []
+            
             for customer in monthly_data['Pelanggan'].unique():
                 customer_data = monthly_data[monthly_data['Pelanggan'] == customer].groupby('Bulan')['Penjualan'].sum()
                 customer_quantity = monthly_data[monthly_data['Pelanggan'] == customer].groupby('Bulan')['Kuantitas'].sum()
-
+            
                 # Check if customer_data has enough variation
                 if customer_data.nunique() <= 1 or customer_quantity.nunique() <= 1:
                     continue  # Skip to the next customer
-
+            
                 try:
-                    # Forecast sales and quantity
+                    # Forecast sales and quantity using a method that captures trends
                     customer_forecast, method_used_customer = select_forecasting_method(customer_data, steps=forecast_months, method=forecasting_method)
                     quantity_forecast, method_used_quantity = select_forecasting_method(customer_quantity, steps=forecast_months, method=forecasting_method)
-
+            
                     # Store the results in a list
                     for month_offset in range(forecast_months):
+                        forecast_date = (monthly_data['Bulan'].max() + month_offset + 1).to_timestamp()
+            
+                        # Introduce variability to the forecasted values
+                        forecast_value_sales = customer_forecast[month_offset] * (1 + np.random.uniform(-0.1, 0.1))  # Add variability
+                        forecast_value_quantity = quantity_forecast[month_offset] * (1 + np.random.uniform(-0.1, 0.1))  # Add variability
+            
                         customer_forecast_results.append({
                             'Pelanggan': customer,
-                            'Tanggal': (monthly_data['Bulan'].max() + month_offset + 1).to_timestamp(),
-                            'Kuantitas': int(quantity_forecast[month_offset]),
-                            'Penjualan': customer_forecast[month_offset]
+                            'Tanggal': forecast_date,
+                            'Kuantitas': int(max(0, forecast_value_quantity)),  # Ensure quantity is non-negative
+                            'Penjualan': max(0, forecast_value_sales)  # Ensure sales is non-negative
                         })
-                except ValueError:
+                except ValueError as e:
+                    print(f"Error forecasting for customer {customer}: {e}")
                     continue  # Skip this customer if there is an error during forecasting
-
+            
             # Convert the results into a DataFrame
             customer_forecast_df = pd.DataFrame(customer_forecast_results)
-
+            
             if not customer_forecast_df.empty:
                 st.write("Hasil Peramalan Transaksi Pelanggan:")
                 customer_forecast_df['Penjualan'] = customer_forecast_df['Penjualan'].apply(lambda x: f"{x:,.2f}")
-                customer_forecast_df['Tanggal'] = customer_forecast_df['Tanggal'].dt.strftime('%d-%m-%y ')  # Format tanggal
+                customer_forecast_df['Tanggal'] = customer_forecast_df['Tanggal'].dt.strftime('%d-%m-%y')  # Format tanggal
                 st.dataframe(customer_forecast_df)
 
-                # Simpan dalam Excel dengan format rapi
-                excel_buffer = io.BytesIO()
-                with pd.ExcelWriter(excel_buffer, engine="xlsxwriter") as writer:
-                    customer_forecast_df.to_excel(writer, index=False, sheet_name="Hasil Peramalan Pelanggan")
+           
 
-                    # Dapatkan workbook dan worksheet
-                    workbook = writer.book
-                    worksheet = writer.sheets["Hasil Peramalan Pelanggan"]
-
-                    # Atur lebar kolom untuk menghindari ####
-                    worksheet.set_column('A:A', 25)  # Atur lebar kolom untuk 'Pelanggan'
-                    worksheet.set_column('B:B', 15)  # Atur lebar kolom untuk 'Kuantitas'
-                    worksheet.set_column('C:C', 15)  # Atur lebar kolom untuk 'Penjualan'
-
-                # Menyediakan tombol download untuk file Excel
-                st.download_button(
-                    label="Download Hasil Peramalan Pelanggan (Excel)",
-                    data=excel_buffer.getvalue(),
-                    file_name="hasil_peramalan_pelanggan.xlsx",
-                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                )
-
-                # Visualization using Plotly
-                fig = go.Figure()
-                for customer in customer_forecast_df['Pelanggan'].unique():
-                    customer_data = customer_forecast_df[customer_forecast_df['Pelanggan'] == customer]
-                    fig.add_trace(go.Scatter(
-                        x=customer_data['Tanggal'],
-                        y=customer_data['Penjualan'],
-                        mode='lines+markers',
-                        name=f'Peramalan Penjualan {customer}',
-                        text=customer_data['Kuantitas'],  # Show quantity on hover
-                        hoverinfo='text+y',  # Show info on hover
-                        line=dict(width=2)
-                    ))
-
-                fig.update_layout(
-                    title='Peramalan Penjualan Pelanggan',
-                    xaxis_title='Tanggal',
-                    yaxis_title='Penjualan',
-                    hovermode='closest'
-                )
-
-                st.plotly_chart(fig)  # Display interactive chart in Streamlit
+            # Grafik tetap pakai df asli tanpa ubah 'Tanggal' jadi string
+            #selected_customer = st.selectbox("Pilih Pelanggan untuk Melihat Grafik Peramalan:", customer_forecast_df['Pelanggan'].unique())
+            #selected_customer_data = customer_forecast_df[customer_forecast_df['Pelanggan'] == selected_customer]
+            
+            # Plot grafik (tidak perlu parsing ulang datetime)
+            #fig_forecast = px.line(selected_customer_data, x='Tanggal', y='Kuantitas', markers=True,
+                                   #title=f'Perkembangan Kuantitas untuk {selected_customer}')
+            #fig_forecast.update_xaxes(
+                #tickvals=selected_customer_data['Tanggal'],
+                #ticktext=[date.strftime('%m %y') for date in selected_customer_data['Tanggal']],
+                #title_text="Bulan dan Tahun"
+            #)
+            #fig_forecast.update_layout(yaxis_title="Kuantitas", title_x=0.5)
+            #st.plotly_chart(fig_forecast)
 
             # Menghitung rata-rata penjualan dan kuantitas untuk setiap pelanggan
             average_customer_forecast_results = []
@@ -654,7 +789,7 @@ else:
 
                 if not customer_data.empty:
                     # Menghapus tanda koma dan mengonversi ke float
-                    customer_data['Penjualan'] = pd.to_numeric(customer_data['Penjualan'].str.replace(',', ''), errors='coerce')
+                    customer_data['Penjualan'] = pd.to_numeric(customer_data['Penjualan'].astype(str).str.replace(',', ''), errors='coerce')
                     customer_data['Kuantitas'] = pd.to_numeric(customer_data['Kuantitas'], errors='coerce')
 
                     # Hapus baris yang memiliki NaN setelah konversi
@@ -704,7 +839,7 @@ else:
                 insights_customer = []
                 for customer in customer_forecast_df['Pelanggan'].unique():
                     customer_data = customer_forecast_df[customer_forecast_df['Pelanggan'] == customer]
-                    customer_data['Penjualan'] = pd.to_numeric(customer_data['Penjualan'].str.replace(',', ''), errors='coerce')
+                    customer_data['Penjualan'] = pd.to_numeric(customer_data['Penjualan'].astype(str).str.replace(',', ''), errors='coerce')
                     average_forecast_customer_sales = customer_data['Penjualan'].mean()
                     trend_customer = customer_data['Penjualan'].iloc[-1] - customer_data['Penjualan'].iloc[-2]  # Perubahan dari bulan terakhir ke bulan sebelumnya
 
@@ -912,29 +1047,6 @@ else:
                         # Menampilkan grafik di Streamlit
                         st.plotly_chart(fig, use_container_width=True)
 
-                    #threshold = st.number_input("Masukkan Ambang Batas untuk Deteksi Lonjakan", min_value=1.0, value=1.5)
-
-                    #if st.button("Deteksi Lonjakan Penjualan"):
-                        #if 'data' in st.session_state and not st.session_state.data.empty:
-                            #sales_data = st.session_state.data.groupby('Tanggal')['Penjualan'].sum()
-                            #spikes = detect_sales_spikes(sales_data, threshold)
-                                
-                            #if not spikes.empty:
-                                #st.write("Lonjakan Penjualan Terdeteksi:")
-                                #st.dataframe(spikes)
-                                    
-                                #plt.figure(figsize=(12, 6))
-                                #plt.plot(sales_data.index, sales_data, label='Penjualan', color='blue')
-                                #plt.scatter(spikes.index, spikes, color='red', label='Lonjakan Penjualan', marker='o')
-                                #plt.title('Analisis Penjualan dan Deteksi Lonjakan')
-                                #plt.xlabel('Tanggal')
-                                #plt.ylabel('Penjualan')
-                                #plt.legend()
-                                #st.pyplot(plt)
-                            #else:
-                                #st.write("Tidak ada lonjakan penjualan yang terdeteksi.")
-                        #else:
-                            #st.warning("Data penjualan tidak tersedia untuk analisis.")
 
                     # Menyimpan DataFrame hasil peramalan ke dalam session state
                     st.session_state.forecast_df = forecast_df
@@ -1270,13 +1382,13 @@ else:
                 st.success("Data telah diperbarui.")
 
     # Menambahkan fitur untuk menampilkan ringkasan laporan
-    if st.button("Tampilkan Ringkasan Laporan"):
-        if not st.session_state.data.empty:
-            summary = st.session_state.data.groupby("Tipe Transaksi").agg({"Penjualan": "sum", "Kuantitas": "sum"}).reset_index()
-            st.write("Ringkasan Laporan:")
-            st.dataframe(summary)
-        else:
-            st.warning("Tidak ada data untuk ditampilkan.")
+    #if st.button("Tampilkan Ringkasan Laporan"):
+        #if not st.session_state.data.empty:
+            #summary = st.session_state.data.groupby("Tipe Transaksi").agg({"Penjualan": "sum", "Kuantitas": "sum"}).reset_index()
+            #st.write("Ringkasan Laporan:")
+            #st.dataframe(summary)
+        #else:
+            #st.warning("Tidak ada data untuk ditampilkan.")
 
     # Opsi untuk menghapus data
     st.sidebar.subheader("Hapus Data")
@@ -1297,6 +1409,8 @@ else:
             st.dataframe(latest_data)
         else:
             st.warning("Tidak ada data untuk ditampilkan.")
+
+    #saya gabut huaaaa ya amounn 
 
     # Menambahkan opsi untuk menghapus entri tertentu
     st.sidebar.subheader("Hapus Entri Tertentu")
