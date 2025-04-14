@@ -723,7 +723,7 @@ else:
 
             # Forecasting for each customer
             customer_forecast_results = []
-            
+
             for customer in monthly_data['Pelanggan'].unique():
                 customer_data = monthly_data[monthly_data['Pelanggan'] == customer].groupby('Bulan')['Penjualan'].sum()
                 customer_quantity = monthly_data[monthly_data['Pelanggan'] == customer].groupby('Bulan')['Kuantitas'].sum()
@@ -741,9 +741,9 @@ else:
                     for month_offset in range(forecast_months):
                         forecast_date = (monthly_data['Bulan'].max() + month_offset + 1).to_timestamp()
             
-                        # Introduce variability to the forecasted values
-                        forecast_value_sales = customer_forecast[month_offset] * (1 + np.random.uniform(-0.1, 0.1))  # Add variability
-                        forecast_value_quantity = quantity_forecast[month_offset] * (1 + np.random.uniform(-0.1, 0.1))  # Add variability
+                        # Remove variability for consistent results
+                        forecast_value_sales = customer_forecast[month_offset]  # No variability added
+                        forecast_value_quantity = quantity_forecast[month_offset]  # No variability added
             
                         customer_forecast_results.append({
                             'Pelanggan': customer,
