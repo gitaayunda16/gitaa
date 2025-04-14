@@ -764,7 +764,32 @@ else:
                 customer_forecast_df['Tanggal'] = customer_forecast_df['Tanggal'].dt.strftime('%d-%m-%y')  # Format tanggal
                 st.dataframe(customer_forecast_df)
 
-           
+            selected_customer = st.selectbox("Pilih Pelanggan untuk Melihat Grafik Peramalan:", customer_forecast_df['Pelanggan'].unique())
+            selected_customer_data = customer_forecast_df[customer_forecast_df['Pelanggan'] == selected_customer]
+            
+            # Convert 'Tanggal' to datetime format
+            selected_customer_data['Tanggal'] = pd.to_datetime(selected_customer_data['Tanggal'], errors='coerce')
+            
+            # Check for NaT values and handle them if necessary
+            if selected_customer_data['Tanggal'].isnull().any():
+                st.warning("Ada nilai yang tidak dapat dikonversi menjadi tanggal. Pastikan format tanggal benar.")
+            
+            # Ensure the data is sorted by 'Tanggal'
+            selected_customer_data = selected_customer_data.sort_values(by='Tanggal')
+            
+            # Plot grafik
+            fig_forecast = px.line(selected_customer_data, x='Tanggal', y='Kuantitas', markers=True,
+                                   title=f'Perkembangan Kuantitas untuk {selected_customer}')
+            
+            # Update x-axis to show month and year
+            fig_forecast.update_xaxes(
+                tickvals=selected_customer_data['Tanggal'],
+                ticktext=[date.strftime('%b %Y') for date in selected_customer_data['Tanggal'] if pd.notnull(date)],
+                title_text="Bulan dan Tahun"
+            )
+            
+            fig_forecast.update_layout(yaxis_title="Kuantitas", title_x=0.5)
+            st.plotly_chart(fig_forecast)
 
             # Grafik tetap pakai df asli tanpa ubah 'Tanggal' jadi string
             #selected_customer = st.selectbox("Pilih Pelanggan untuk Melihat Grafik Peramalan:", customer_forecast_df['Pelanggan'].unique())
