@@ -21,29 +21,29 @@ import plotly.express as px
 import re
 
 # Koneksi ke database SQLite
-def create_connection():
-    conn = sqlite3.connect("forecasting_results.db")
-    return conn
+#def create_connection():
+    #conn = sqlite3.connect("forecasting_results.db")
+    #return conn
 
-def create_table():
-    conn = create_connection()
-    cursor = conn.cursor()
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS forecasts (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            product_name TEXT,
-            month TEXT,
-            sales REAL,
-            quantity REAL,
-            method TEXT,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    ''')
-    conn.commit()
-    conn.close()
+#def create_table():
+    #conn = create_connection()
+    #cursor = conn.cursor()
+    #cursor.execute('''
+        #CREATE TABLE IF NOT EXISTS forecasts (
+            #id INTEGER PRIMARY KEY AUTOINCREMENT,
+            #product_name TEXT,
+            #month TEXT,
+            #sales REAL,
+            #quantity REAL,
+            #method TEXT,
+            #created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        #)
+    #''')
+    #conn.commit()
+    #conn.close()
 
 # Create the table when the application starts
-create_table()
+#create_table()
 
 # Judul aplikasi 
 st.title("📈 Aplikasi")
@@ -75,6 +75,8 @@ def get_event_dates(year):
         elif 'Natal' in name:
             event_dates['Natal'].append(date)
     return event_dates
+
+#untuk event 
 
 # Mendapatkan event untuk tahun ini
 current_year = datetime.now().year
@@ -949,9 +951,16 @@ else:
                         mime="application/vnd.openxmlformats-officedocument.spreadsheet.spreadsheetml.sheet",
                     )
 
+                    #meminta pengguna untuk memilih produk untuk grafik
+                    #unique_products = predicted_customers_df['Nama Barang'].unique()
+                    #selected_products = st.multiselect("Pilih Nama Barang Untuk Grafik", unique_products)
+
                     # Meminta pengguna untuk memilih produk untuk grafik
                     unique_products = predicted_customers_df['Nama Barang'].unique()
                     selected_products = st.multiselect("Pilih Nama Barang untuk Grafik", unique_products)
+
+                    #if not selected_products:
+                        #st.warning("Silahkan pilih setidaknya satu nama barang untuk melihat grafik")
 
                     # Jika tidak ada produk yang dipilih, tampilkan pesan
                     if not selected_products:
@@ -1366,9 +1375,59 @@ else:
         else:
             st.warning("Tidak ada data yang dimuat. Silakan pastikan data sudah tersedia di menu awal.")
 
+    #elif menu == "Statistik Sales":
+        #st.subheader("Statistik Perkembangan Sales Bulanan")
+        #if not st.session_state.data.empty:
+            # Pastikan Tanggal format datetime
+            #st.session_state.data['Tanggal'] = pd.to_datetime(st.session_state.data['Tanggal'], errors='coerce')
+            #st.session_state.data = st.session_state.data.dropna(subset=['Tanggal'])
+    
+            # Ekstrak Bulan
+            #st.session_state.data['Bulan'] = st.session_state.data['Tanggal'].dt.to_period('M').astype(str)
+    
+            # Agregasi total kuantitas per bulan, tenaga penjual, dan departemen
+            #monthly_sales = st.session_state.data.groupby(['Bulan', 'Nama Tenaga Penjual', 'Nama Departemen', 'Nama Barang'])[['Kuantitas', 'Penjualan']].sum().reset_index()
+    
+            # Konversi Bulan ke datetime untuk pengurutan
+            #monthly_sales['Bulan'] = pd.to_datetime(monthly_sales['Bulan'])
+            #monthly_sales = monthly_sales.sort_values(by='Bulan')
+            #monthly_sales['Bulan'] = monthly_sales['Bulan'].dt.strftime('%Y-%m')
+    
+            # Tampilkan DataFrame ringkasan
+            #st.write("Ringkasan Penjualan Bulanan:")
+            #st.dataframe(monthly_sales)
+    
+            # Dropdown untuk memilih Tenaga Penjual
+            #semua_nama_tenaga_penjual = monthly_sales['Nama Tenaga Penjual'].unique()
+            #selected_nama_tenaga_penjual = st.selectbox("Pilih Nama Tenaga Penjual", semua_nama_tenaga_penjual)
+    
+            # Filter data berdasarkan tenaga penjual yang dipilih
+            #filtered_sales_by_salesperson = monthly_sales[monthly_sales['Nama Tenaga Penjual'] == selected_nama_tenaga_penjual]
+    
+            # Dropdown untuk memilih Barang berdasarkan tenaga penjual yang dipilih
+            #semua_nama_barang = filtered_sales_by_salesperson['Nama Barang'].unique()
+            #selected_nama_barang = st.selectbox("Pilih Nama Barang", semua_nama_barang)
+    
+            # Filter data berdasarkan barang yang dipilih
+            #filtered_sales = filtered_sales_by_salesperson[filtered_sales_by_salesperson['Nama Barang'] == selected_nama_barang]
+    
+            # Plot grafik Kuantitas untuk barang yang dipilih oleh tenaga penjual yang dipilih
+            #fig = px.line(filtered_sales, x='Bulan', y='Kuantitas', 
+                          #title=f'Tren Kuantitas Penjualan Bulanan untuk {selected_nama_barang} oleh {selected_nama_tenaga_penjual}',
+                          #markers=True,
+                          #labels={'Bulan': 'Bulan', 'Kuantitas': 'Total Kuantitas'})
+    
+            #st.plotly_chart(fig, key='fig_salesperson_product')  # Unique key for the product sales plot
+    
+            # Tampilkan data rinci untuk barang yang dipilih
+            #st.write(f"Data Rinci untuk {selected_nama_barang} oleh {selected_nama_tenaga_penjual}:")
+            #st.dataframe(filtered_sales)
+    
+        #else:
+            #st.warning("Tidak ada data yang dimuat. Silakan pastikan data sudah tersedia di menu awal.")
+
     elif menu == "Statistik Sales":
         st.subheader("Statistik Perkembangan Sales Bulanan")
-    
         if not st.session_state.data.empty:
             # Pastikan Tanggal format datetime
             st.session_state.data['Tanggal'] = pd.to_datetime(st.session_state.data['Tanggal'], errors='coerce')
@@ -1377,8 +1436,8 @@ else:
             # Ekstrak Bulan
             st.session_state.data['Bulan'] = st.session_state.data['Tanggal'].dt.to_period('M').astype(str)
     
-            # Agregasi total kuantitas per bulan dan tenaga penjual
-            monthly_sales = st.session_state.data.groupby(['Bulan', 'Nama Tenaga Penjual'])[['Kuantitas', 'Penjualan']].sum().reset_index()
+            # Agregasi total kuantitas dan penjualan per bulan, tenaga penjual, dan departemen
+            monthly_sales = st.session_state.data.groupby(['Bulan', 'Nama Tenaga Penjual', 'Nama Departemen'])[['Kuantitas', 'Penjualan']].sum().reset_index()
     
             # Konversi Bulan ke datetime untuk pengurutan
             monthly_sales['Bulan'] = pd.to_datetime(monthly_sales['Bulan'])
@@ -1389,31 +1448,39 @@ else:
             st.write("Ringkasan Penjualan Bulanan:")
             st.dataframe(monthly_sales)
     
-            # Plot grafik Kuantitas untuk semua tenaga penjual
-            fig = px.line(monthly_sales, x='Bulan', y='Kuantitas', color='Nama Tenaga Penjual',
-                          title='Tren Kuantitas Penjualan Bulanan',
+            # Dropdown untuk memilih Tenaga Penjual
+            semua_nama_tenaga_penjual = monthly_sales['Nama Tenaga Penjual'].unique()
+            selected_nama_tenaga_penjual = st.selectbox("Pilih Nama Tenaga Penjual", semua_nama_tenaga_penjual)
+    
+            # Filter data berdasarkan tenaga penjual yang dipilih
+            filtered_sales_by_salesperson = monthly_sales[monthly_sales['Nama Tenaga Penjual'] == selected_nama_tenaga_penjual]
+    
+            # Tampilkan statistik bulanan untuk tenaga penjual yang dipilih
+            st.write(f"Statistik Penjualan Bulanan untuk {selected_nama_tenaga_penjual}:")
+            st.dataframe(filtered_sales_by_salesperson)
+    
+            # Dropdown untuk memilih Barang berdasarkan tenaga penjual yang dipilih
+            semua_nama_barang = st.session_state.data[st.session_state.data['Nama Tenaga Penjual'] == selected_nama_tenaga_penjual]['Nama Barang'].unique()
+            selected_nama_barang = st.selectbox("Pilih Nama Barang", semua_nama_barang)
+    
+            # Filter data berdasarkan barang yang dipilih
+            filtered_sales = st.session_state.data[(st.session_state.data['Nama Tenaga Penjual'] == selected_nama_tenaga_penjual) & 
+                                                    (st.session_state.data['Nama Barang'] == selected_nama_barang)]
+    
+            # Agregasi kuantitas per bulan untuk barang yang dipilih
+            monthly_product_sales = filtered_sales.groupby('Bulan')[['Kuantitas']].sum().reset_index()
+    
+            # Plot grafik Kuantitas untuk barang yang dipilih oleh tenaga penjual yang dipilih
+            fig = px.line(monthly_product_sales, x='Bulan', y='Kuantitas', 
+                          title=f'Tren Kuantitas Penjualan Bulanan untuk {selected_nama_barang} oleh {selected_nama_tenaga_penjual}',
                           markers=True,
                           labels={'Bulan': 'Bulan', 'Kuantitas': 'Total Kuantitas'})
     
-            st.plotly_chart(fig)
+            st.plotly_chart(fig, key='fig_salesperson_product')  # Unique key for the product sales plot
     
-            # Dropdown untuk pilih Tenaga Penjual di bawah grafik
-            semua_nama = monthly_sales['Nama Tenaga Penjual'].unique()
-            selected_nama = st.selectbox("Pilih Nama Tenaga Penjual", semua_nama)
-    
-            # Filter data jika nama dipilih
-            filtered_data = monthly_sales[monthly_sales['Nama Tenaga Penjual'] == selected_nama]
-            
-            # Plot grafik untuk tenaga penjual yang dipilih
-            fig_filtered = px.line(filtered_data, x='Bulan', y='Kuantitas', 
-                                    title=f'Tren Kuantitas Penjualan Bulanan untuk {selected_nama}',
-                                    markers=True,
-                                    labels={'Bulan': 'Bulan', 'Kuantitas': 'Total Kuantitas'})
-            st.plotly_chart(fig_filtered)
-    
-            # Tampilkan data rinci untuk tenaga penjual yang dipilih
-            st.write(f"Data Rinci untuk {selected_nama}:")
-            st.dataframe(filtered_data)
+            # Tampilkan data rinci untuk barang yang dipilih
+            st.write(f"Data Rinci untuk {selected_nama_barang} oleh {selected_nama_tenaga_penjual}:")
+            st.dataframe(filtered_sales)
     
         else:
             st.warning("Tidak ada data yang dimuat. Silakan pastikan data sudah tersedia di menu awal.")
