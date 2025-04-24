@@ -1375,61 +1375,48 @@ else:
         else:
             st.warning("Tidak ada data yang dimuat. Silakan pastikan data sudah tersedia di menu awal.")
 
-    #elif menu == "Statistik Sales":
-        #st.subheader("Statistik Perkembangan Sales Bulanan")
+    #elif menu == "Statistik sales tanpa departemeb":
         #if not st.session_state.data.empty:
-            # Pastikan Tanggal format datetime
             #st.session_state.data['Tanggal'] = pd.to_datetime(st.session_state.data['Tanggal'], errors='coerce')
             #st.session_state.data = st.session_state.data.dropna(subset=['Tanggal'])
-    
-            # Ekstrak Bulan
+
             #st.session_state.data['Bulan'] = st.session_state.data['Tanggal'].dt.to_period('M').astype(str)
-    
-            # Agregasi total kuantitas per bulan, tenaga penjual, dan departemen
+            
+
             #monthly_sales = st.session_state.data.groupby(['Bulan', 'Nama Tenaga Penjual', 'Nama Departemen', 'Nama Barang'])[['Kuantitas', 'Penjualan']].sum().reset_index()
-    
-            # Konversi Bulan ke datetime untuk pengurutan
+
             #monthly_sales['Bulan'] = pd.to_datetime(monthly_sales['Bulan'])
             #monthly_sales = monthly_sales.sort_values(by='Bulan')
-            #monthly_sales['Bulan'] = monthly_sales['Bulan'].dt.strftime('%Y-%m')
-    
-            # Tampilkan DataFrame ringkasan
+            #monthly_sales['Bulan'] = monthly_sales['Bulan'].dt.strftime('%Y,%m')
+
             #st.write("Ringkasan Penjualan Bulanan:")
             #st.dataframe(monthly_sales)
-    
-            # Dropdown untuk memilih Tenaga Penjual
+
             #semua_nama_tenaga_penjual = monthly_sales['Nama Tenaga Penjual'].unique()
-            #selected_nama_tenaga_penjual = st.selectbox("Pilih Nama Tenaga Penjual", semua_nama_tenaga_penjual)
-    
-            # Filter data berdasarkan tenaga penjual yang dipilih
+            #selected_nama_tenaga_penjual = st.selectbox("Pilih Nama Tenaga Penjua;", semua_nama_tenaga_penjual)
+
             #filtered_sales_by_salesperson = monthly_sales[monthly_sales['Nama Tenaga Penjual'] == selected_nama_tenaga_penjual]
-    
-            # Dropdown untuk memilih Barang berdasarkan tenaga penjual yang dipilih
+
             #semua_nama_barang = filtered_sales_by_salesperson['Nama Barang'].unique()
             #selected_nama_barang = st.selectbox("Pilih Nama Barang", semua_nama_barang)
-    
-            # Filter data berdasarkan barang yang dipilih
+
             #filtered_sales = filtered_sales_by_salesperson[filtered_sales_by_salesperson['Nama Barang'] == selected_nama_barang]
-    
-            # Plot grafik Kuantitas untuk barang yang dipilih oleh tenaga penjual yang dipilih
+
             #fig = px.line(filtered_sales, x='Bulan', y='Kuantitas', 
                           #title=f'Tren Kuantitas Penjualan Bulanan untuk {selected_nama_barang} oleh {selected_nama_tenaga_penjual}',
                           #markers=True,
                           #labels={'Bulan': 'Bulan', 'Kuantitas': 'Total Kuantitas'})
-    
-            #st.plotly_chart(fig, key='fig_salesperson_product')  # Unique key for the product sales plot
-    
-            # Tampilkan data rinci untuk barang yang dipilih
-            #st.write(f"Data Rinci untuk {selected_nama_barang} oleh {selected_nama_tenaga_penjual}:")
-            #st.dataframe(filtered_sales)
-    
-        #else:
-            #st.warning("Tidak ada data yang dimuat. Silakan pastikan data sudah tersedia di menu awal.")
 
+            #st.plotly_chart(fig, key='fig_salesperson_product')
+
+            #st.write(f"Data Rinci untuk (selected_nama_barang) oleh (selected_nama_tenaga_penjual):")
+            #st.dataframe(filtered_sales)
+            
+    #sudah benar ini
     elif menu == "Statistik Sales":
         st.subheader("Statistik Perkembangan Sales Bulanan")
         if not st.session_state.data.empty:
-            # Pastikan Tanggal format datetime
+            #Pastikan Tanggal format datetime
             st.session_state.data['Tanggal'] = pd.to_datetime(st.session_state.data['Tanggal'], errors='coerce')
             st.session_state.data = st.session_state.data.dropna(subset=['Tanggal'])
     
@@ -1466,22 +1453,20 @@ else:
             # Filter data berdasarkan barang yang dipilih
             filtered_sales = st.session_state.data[(st.session_state.data['Nama Tenaga Penjual'] == selected_nama_tenaga_penjual) & 
                                                     (st.session_state.data['Nama Barang'] == selected_nama_barang)]
-    
-            # Agregasi kuantitas per bulan untuk barang yang dipilih
+
             monthly_product_sales = filtered_sales.groupby('Bulan')[['Kuantitas']].sum().reset_index()
-    
+
             # Plot grafik Kuantitas untuk barang yang dipilih oleh tenaga penjual yang dipilih
             fig = px.line(monthly_product_sales, x='Bulan', y='Kuantitas', 
                           title=f'Tren Kuantitas Penjualan Bulanan untuk {selected_nama_barang} oleh {selected_nama_tenaga_penjual}',
                           markers=True,
                           labels={'Bulan': 'Bulan', 'Kuantitas': 'Total Kuantitas'})
-    
-            st.plotly_chart(fig, key='fig_salesperson_product')  # Unique key for the product sales plot
-    
+
+            st.plotly_chart(fig, key='fig_salesperson_product') 
+
             # Tampilkan data rinci untuk barang yang dipilih
             st.write(f"Data Rinci untuk {selected_nama_barang} oleh {selected_nama_tenaga_penjual}:")
             st.dataframe(filtered_sales)
-    
         else:
             st.warning("Tidak ada data yang dimuat. Silakan pastikan data sudah tersedia di menu awal.")
 
@@ -1491,14 +1476,14 @@ else:
         st.success("Chat history telah direset. Anda dapat memulai percakapan baru.")
 
     # Menampilkan data yang telah dimasukkan
-    if st.button("Tampilkan Data"):
-        sorted_data = st.session_state.data.sort_values(by=["Tanggal", "Pelanggan", "Nama Barang", "Kuantitas", "Penjualan", "Kota Pengiriman Pelanggan"])
-        st.write(sorted_data)
+    #if st.button("Tampilkan Data"):
+        #sorted_data = st.session_state.data.sort_values(by=["Tanggal", "Pelanggan", "Nama Barang", "Kuantitas", "Penjualan", "Kota Pengiriman Pelanggan"])
+        #st.write(sorted_data)
 
     # Menyimpan data ke file CSV
-    if st.button("Simpan Data ke CSV"):
-        st.session_state.data.to_csv("data_akuntansi.csv", index=False)
-        st.success("Data telah disimpan ke file CSV.")
+    #if st.button("Simpan Data ke CSV"):
+        #st.session_state.data.to_csv("data_akuntansi.csv", index=False)
+        #st.success("Data telah disimpan ke file CSV.")
 
     # Menambahkan fitur untuk menghapus data
     if st.button("Hapus Data Terakhir"):
@@ -1509,29 +1494,29 @@ else:
             st.warning("Tidak ada data untuk dihapus.")
 
     # Menambahkan fitur untuk mengedit data
-    if st.button("Edit Data"):
-        edit_index = st.number_input("Masukkan Indeks Data yang Ingin Diedit", min_value=0, max_value=len(st.session_state.data)-1)
-        if edit_index is not None and edit_index < len(st.session_state.data):
-            edited_row = st.session_state.data.iloc[edit_index]
-            new_vendor = st.text_input("Pelanggan", value=edited_row["Pelanggan"])
-            new_barang = st.text_input("Nama Barang", value=edited_row["Nama Barang"])
-            new_amount = st.number_input("Penjualan", value=edited_row["Penjualan"])
-            new_quantity = st.number_input("Kuantitas", value=edited_row["Kuantitas"])
-            new_date = st.date_input("Tanggal", value=edited_row["Tanggal"])
+    #if st.button("Edit Data"):
+        #edit_index = st.number_input("Masukkan Indeks Data yang Ingin Diedit", min_value=0, max_value=len(st.session_state.data)-1)
+        #if edit_index is not None and edit_index < len(st.session_state.data):
+            #edited_row = st.session_state.data.iloc[edit_index]
+            #new_vendor = st.text_input("Pelanggan", value=edited_row["Pelanggan"])
+            #new_barang = st.text_input("Nama Barang", value=edited_row["Nama Barang"])
+            #new_amount = st.number_input("Penjualan", value=edited_row["Penjualan"])
+            #new_quantity = st.number_input("Kuantitas", value=edited_row["Kuantitas"])
+            #new_date = st.date_input("Tanggal", value=edited_row["Tanggal"])
             
-            if st.button("Simpan Perubahan"):
-                st.session_state.data.at[ edit_index, "Pelanggan"] = new_vendor
-                st.session_state.data.at[edit_index, "Nama Barang"] = new_barang
-                st.session_state.data.at[edit_index, "Penjualan"] = new_amount
-                st.session_state.data.at[edit_index, "Kuantitas"] = new_quantity
-                st.session_state.data.at[edit_index, "Tanggal"] = new_date
-                st.success("Data telah diperbarui.")
+            #if st.button("Simpan Perubahan"):
+                #st.session_state.data.at[ edit_index, "Pelanggan"] = new_vendor
+                #st.session_state.data.at[edit_index, "Nama Barang"] = new_barang
+                #st.session_state.data.at[edit_index, "Penjualan"] = new_amount
+                #st.session_state.data.at[edit_index, "Kuantitas"] = new_quantity
+                #st.session_state.data.at[edit_index, "Tanggal"] = new_date
+                #st.success("Data telah diperbarui.")
 
     # Opsi untuk menghapus data
-    st.sidebar.subheader("Hapus Data")
-    if st.sidebar.button("Hapus Semua Data"):
-        st.session_state.data = pd.DataFrame(columns=["Pelanggan", "Tanggal", "Tipe Transaksi", "Nama Barang", "Kuantitas", "Penjualan"])
-        st.success("Semua data telah dihapus.")
+    #st.sidebar.subheader("Hapus Data")
+    #if st.sidebar.button("Hapus Semua Data"):
+        #st.session_state.data = pd.DataFrame(columns=[])
+        #st.success("Semua data telah dihapus.")
 
     # Panggil fungsi untuk menyimpan data ke database
     if st.button("Simpan Data ke Database"):
@@ -1539,15 +1524,13 @@ else:
         st.success("Data telah disimpan ke database.")
 
     # Menambahkan fitur untuk menampilkan data terbaru
-    if st.button("Tampilkan Data Terbaru"):
-        if not st.session_state.data.empty:
-            latest_data = st.session_state.data.tail(5)
-            st.write("Data Terbaru:")
-            st.dataframe(latest_data)
-        else:
-            st.warning("Tidak ada data untuk ditampilkan.")
-
-    #saya gabut huaaaa ya amounn 
+    #if st.button("Tampilkan Data Terbaru"):
+        #if not st.session_state.data.empty:
+            #latest_data = st.session_state.data.tail(5)
+            #st.write("Data Terbaru:")
+            #st.dataframe(latest_data)
+        #else:
+            #st.warning("Tidak ada data untuk ditampilkan.")
 
     # Menambahkan opsi untuk menghapus entri tertentu
     st.sidebar.subheader("Hapus Entri Tertentu")
