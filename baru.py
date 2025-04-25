@@ -21,29 +21,29 @@ import plotly.express as px
 import re
 
 # Koneksi ke database SQLite
-#def create_connection():
-    #conn = sqlite3.connect("forecasting_results.db")
-    #return conn
+def create_connection():
+    conn = sqlite3.connect("forecasting_results.db")
+    return conn
 
-#def create_table():
-    #conn = create_connection()
-    #cursor = conn.cursor()
-    #cursor.execute('''
-        #CREATE TABLE IF NOT EXISTS forecasts (
-            #id INTEGER PRIMARY KEY AUTOINCREMENT,
-            #product_name TEXT,
-            #month TEXT,
-            #sales REAL,
-            #quantity REAL,
-            #method TEXT,
-            #created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        #)
-    #''')
-    #conn.commit()
-    #conn.close()
+def create_table():
+    conn = create_connection()
+    cursor = conn.cursor()
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS forecasts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            product_name TEXT,
+            month TEXT,
+            sales REAL,
+            quantity REAL,
+            method TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+    conn.commit()
+    conn.close()
 
 # Create the table when the application starts
-#create_table()
+create_table()
 
 # Judul aplikasi 
 st.title("📈 Aplikasi")
@@ -289,13 +289,10 @@ else:
         "Unggah Data",
         "Penganggaran dan Peramalan",
         "Statistik Customer",
-        "Statistik Sales"
+        "Statistik Sales Kuantitas",
+        "Statistik Sales Omsetnya"
     ])
 
-    # Fungsi Unggah Data
-
-    # Fungsi Unggah Data
-    # Fungsi Unggah Data
     # Fungsi Unggah Data
     if menu == "Unggah Data":
         st.subheader("Unggah Data dari File")
@@ -577,79 +574,6 @@ else:
                 file_name="wawasan_peramalan_kuantitas_produk.xlsx",
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             )
-
-            # Forecasting for each customer
-            # Forecasting for each customer
-            #customer_forecast_results = []
-            
-            #for customer in monthly_data['Pelanggan'].unique():
-                #customer_data = monthly_data[monthly_data['Pelanggan'] == customer].groupby('Bulan')['Penjualan'].sum()
-                #customer_quantity = monthly_data[monthly_data['Pelanggan'] == customer].groupby('Bulan')['Kuantitas'].sum()
-            
-                # Check if customer_data has enough variation
-                #if customer_data.nunique() <= 1 or customer_quantity.nunique() <= 1:
-                    #continue  # Skip to the next customer
-            
-                #try:
-                     #Forecast sales and quantity
-                    #customer_forecast, method_used_customer = select_forecasting_method(customer_data, steps=forecast_months, method=forecasting_method)
-                    #quantity_forecast, method_used_quantity = select_forecasting_method(customer_quantity, steps=forecast_months, method=forecasting_method)
-            
-                    # Get the last month in the data and calculate the forecast start date
-                    #last_month = customer_data.index.max()  # Get the last month in the data
-                    #forecast_start_date = last_month + 1  # Start from the next month
-            
-                    # Store the results in a list
-                    #for month_offset in range(forecast_months):
-                        #forecast_date = (forecast_start_date + month_offset).to_timestamp()  # Calculate the forecast date
-                        
-                        # Introduce variability to the forecasted values
-                        #forecast_value_sales = customer_forecast[month_offset] * (1 + np.random.uniform(-0.05, 0.05))  # Add variability
-                        #forecast_value_quantity = quantity_forecast[month_offset] * (1 + np.random.uniform(-0.05, 0.05))  # Add variability
-                        
-                        #customer_forecast_results.append({
-                            #'Pelanggan': customer,
-                            #'Tanggal': forecast_date,
-                            #'Kuantitas': int(forecast_value_quantity),
-                            #'Penjualan': forecast_value_sales
-                        #})
-                #except ValueError:
-                    #continue  # Skip this customer if there is an error during forecasting
-            
-            # Convert the results into a DataFrame
-            #customer_forecast_df = pd.DataFrame(customer_forecast_results)
-            
-            # Remove duplicates if any
-            #customer_forecast_df = customer_forecast_df.drop_duplicates(subset=['Pelanggan', 'Tanggal'])
-            
-            #if not customer_forecast_df.empty:
-                #st.write("Hasil Peramalan Transaksi Pelanggan:")
-                #customer_forecast_df_display = customer_forecast_df.copy()
-                #customer_forecast_df_display['Penjualan'] = customer_forecast_df_display['Penjualan'].apply(lambda x: f"{x:,.2f}")
-                #customer_forecast_df_display['Tanggal'] = customer_forecast_df_display['Tanggal'].dt.strftime('%d-%m-%y')
-                #st.dataframe(customer_forecast_df_display)
-            
-                # Simpan dalam Excel dengan format rapi
-                #excel_buffer = io.BytesIO()
-                #with pd.ExcelWriter(excel_buffer, engine="xlsxwriter") as writer:
-                    #customer_forecast_df.to_excel(writer, index=False, sheet_name="Hasil Peramalan Pelanggan")
-            
-                    # Dapatkan workbook dan worksheet
-                    #workbook = writer.book
-                    #worksheet = writer.sheets["Hasil Peramalan Pelanggan"]
-            
-                    # Atur lebar kolom untuk menghindari ####
-                    #worksheet.set_column('A:A', 25)  # Atur lebar kolom untuk 'Pelanggan'
-                    #worksheet.set_column('B:B', 15)  # Atur lebar kolom untuk 'Kuantitas'
-                    #worksheet.set_column('C:C', 15)  # Atur lebar kolom untuk 'Penjualan'
-            
-                # Menyediakan tombol download untuk file Excel
-                #st.download_button(
-                    #label="Download Hasil Peramalan Pelanggan (Excel)",
-                    #data=excel_buffer.getvalue(),
-                    #file_name="hasil_peramalan_pelanggan.xlsx",
-                    #mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                #)
 
                 # Forecasting for each customer
             customer_forecast_results = []
@@ -1201,101 +1125,6 @@ else:
                         # Add assistant response to chat history
                         st.session_state.messages.append({"role": "assistant", "content": answer})
 
-    #if menu == "Statistik":
-        #st.subheader("Statistik Perkembangan Pembelian Pelanggan")
-    
-        #if not st.session_state.data.empty:
-            #df = st.session_state.data.copy()
-    
-            # Format tanggal
-            #df['Tanggal'] = pd.to_datetime(df['Tanggal'])
-    
-            # Kolom penting
-            #df = df[['Tanggal', 'Pelanggan', 'Nama Barang', 'Kuantitas', 'Kota Pengiriman Pelanggan']]
-            #df.rename(columns={
-                #'Kota Pengiriman Pelanggan': 'Kota',
-                #'Pelanggan': 'Customer'
-            #}, inplace=True)
-    
-            # Hitung total kuantitas bulanan
-            #grouped = df.groupby(['Kota', 'Customer', pd.Grouper(key='Tanggal', freq='M')])['Kuantitas'].sum().reset_index()
-    
-            # Sidebar filter untuk memilih kota (menggunakan lower case untuk menghindari duplikasi)
-            #kota_terpilih = st.selectbox("Pilih Kota", sorted(grouped['Kota'].str.lower().unique()))
-            #df_kota = grouped[grouped['Kota'].str.lower() == kota_terpilih]
-    
-            # Menambahkan kolom perkembangan
-            #df_kota.sort_values(by=['Customer', 'Tanggal'], inplace=True)
-            #df_kota['Perkembangan'] = df_kota.groupby('Customer')['Kuantitas'].diff().fillna(0)
-    
-            # Menentukan status perkembangan
-            #df_kota['Status Perkembangan'] = df_kota['Perkembangan'].apply(
-                #lambda x: 'Naik' if x > 0 else ('Turun' if x < 0 else 'Tetap')
-            #)
-    
-            # Menampilkan semua pelanggan dan perkembangan mereka di kota terpilih
-            #st.write(f"Pelanggan di Kota {kota_terpilih.capitalize()}")
-            #st.dataframe(df_kota[['Customer', 'Tanggal', 'Kuantitas', 'Status Perkembangan']], use_container_width=True)
-    
-            # Membuat grafik untuk semua pelanggan di kota terpilih
-            #st.write("Grafik Perkembangan Kuantitas Pelanggan")
-            #fig_all = px.line(df_kota, x='Tanggal', y='Kuantitas', color='Customer', markers=True,
-                              #title=f'Perkembangan Kuantitas Pelanggan di {kota_terpilih.capitalize()}')
-    
-            # Mengatur sumbu x untuk menampilkan semua bulan
-            #fig_all.update_xaxes(
-                #tickvals=df_kota['Tanggal'],  # Menggunakan semua tanggal yang ada
-                #ticktext=[date.strftime('%b %Y') for date in df_kota['Tanggal']],  # Format bulan dan tahun
-                #title_text="Bulan dan Tahun"  # Judul sumbu x
-            #)
-    
-            #fig_all.update_layout(yaxis_title="Kuantitas", title_x=0.5)
-            #st.plotly_chart(fig_all)
-    
-            # Sidebar filter untuk memilih customer
-            #if not df_kota.empty:
-                #customer_terpilih = st.selectbox("Pilih Customer untuk Detail", sorted(df_kota['Customer'].unique()))
-                #df_cust = df_kota[df_kota['Customer'] == customer_terpilih]
-    
-                #st.write(f"Grafik Perubahan Kuantitas - {customer_terpilih} di {kota_terpilih.capitalize()}")
-    
-                # Membuat grafik interaktif untuk customer yang dipilih
-                #fig_cust = px.line(df_cust, x='Tanggal', y='Kuantitas', markers=True,
-                                   #title=f'Perkembangan Kuantitas {customer_terpilih}')
-    
-                # Mengatur sumbu x untuk menampilkan semua bulan
-                #fig_cust.update_xaxes(
-                    #tickvals=df_cust['Tanggal'],  # Menggunakan semua tanggal yang ada
-                    #ticktext=[date.strftime('%b %Y') for date in df_cust['Tanggal']],  # Format bulan dan tahun
-                    #title_text="Bulan dan Tahun"  # Judul sumbu x
-                #)
-    
-                #fig_cust.update_layout(yaxis_title="Kuantitas", title_x=0.5)
-                #st.plotly_chart(fig_cust)
-    
-                #st.markdown("---")
-                #st.write("Data Rinci untuk Customer Terpilih")
-                #st.dataframe(df_cust[['Tanggal', 'Kuantitas', 'Status Perkembangan']], use_container_width=True)
-    
-                # Membuat grafik untuk setiap customer
-                #for customer in df_kota['Customer'].unique():
-                    #df_customer = df_kota[df_kota['Customer'] == customer]
-                    #fig_customer = px.line(df_customer, x='Tanggal', y='Kuantitas', markers=True,
-                                           #title=f'Perkembangan Kuantitas {customer} di {kota_terpilih.capitalize()}')
-                    
-                    # Mengatur sumbu x untuk menampilkan semua bulan
-                    #fig_customer.update_xaxes(
-                        #tickvals=df_customer['Tanggal'],  # Menggunakan semua tanggal yang ada
-                        #ticktext=[date.strftime('%b %Y') for date in df_customer['Tanggal']],  # Format bulan dan tahun
-                        #title_text="Bulan dan Tahun"  # Judul sumbu x
-                    #)
-                    
-                    #fig_customer.update_layout(yaxis_title="Kuantitas", title_x=0.5)
-                    #st.plotly_chart(fig_customer)
-    
-        #else:
-            #st.warning("Tidak ada data yang dimuat. Silakan pastikan data sudah tersedia di menu awal.")
-
     elif menu == "Statistik Customer":
         st.subheader("Statistik Perkembangan Pembelian Pelanggan")
     
@@ -1374,46 +1203,9 @@ else:
     
         else:
             st.warning("Tidak ada data yang dimuat. Silakan pastikan data sudah tersedia di menu awal.")
-
-    #elif menu == "Statistik sales tanpa departemeb":
-        #if not st.session_state.data.empty:
-            #st.session_state.data['Tanggal'] = pd.to_datetime(st.session_state.data['Tanggal'], errors='coerce')
-            #st.session_state.data = st.session_state.data.dropna(subset=['Tanggal'])
-
-            #st.session_state.data['Bulan'] = st.session_state.data['Tanggal'].dt.to_period('M').astype(str)
-            
-
-            #monthly_sales = st.session_state.data.groupby(['Bulan', 'Nama Tenaga Penjual', 'Nama Departemen', 'Nama Barang'])[['Kuantitas', 'Penjualan']].sum().reset_index()
-
-            #monthly_sales['Bulan'] = pd.to_datetime(monthly_sales['Bulan'])
-            #monthly_sales = monthly_sales.sort_values(by='Bulan')
-            #monthly_sales['Bulan'] = monthly_sales['Bulan'].dt.strftime('%Y,%m')
-
-            #st.write("Ringkasan Penjualan Bulanan:")
-            #st.dataframe(monthly_sales)
-
-            #semua_nama_tenaga_penjual = monthly_sales['Nama Tenaga Penjual'].unique()
-            #selected_nama_tenaga_penjual = st.selectbox("Pilih Nama Tenaga Penjua;", semua_nama_tenaga_penjual)
-
-            #filtered_sales_by_salesperson = monthly_sales[monthly_sales['Nama Tenaga Penjual'] == selected_nama_tenaga_penjual]
-
-            #semua_nama_barang = filtered_sales_by_salesperson['Nama Barang'].unique()
-            #selected_nama_barang = st.selectbox("Pilih Nama Barang", semua_nama_barang)
-
-            #filtered_sales = filtered_sales_by_salesperson[filtered_sales_by_salesperson['Nama Barang'] == selected_nama_barang]
-
-            #fig = px.line(filtered_sales, x='Bulan', y='Kuantitas', 
-                          #title=f'Tren Kuantitas Penjualan Bulanan untuk {selected_nama_barang} oleh {selected_nama_tenaga_penjual}',
-                          #markers=True,
-                          #labels={'Bulan': 'Bulan', 'Kuantitas': 'Total Kuantitas'})
-
-            #st.plotly_chart(fig, key='fig_salesperson_product')
-
-            #st.write(f"Data Rinci untuk (selected_nama_barang) oleh (selected_nama_tenaga_penjual):")
-            #st.dataframe(filtered_sales)
             
     #sudah benar ini
-    elif menu == "Statistik Sales":
+    elif menu == "Statistik Sales Kuantitas":
         st.subheader("Statistik Perkembangan Sales Bulanan")
         if not st.session_state.data.empty:
             #Pastikan Tanggal format datetime
@@ -1470,67 +1262,96 @@ else:
         else:
             st.warning("Tidak ada data yang dimuat. Silakan pastikan data sudah tersedia di menu awal.")
 
+    elif menu == "Statistik Sales Omsetnya":
+        st.subheader("Statistik Perkembangan Sales Bulanan Omsetnya")
+    
+        if not st.session_state.data.empty:
+            # Pastikan Tanggal format datetime
+            st.session_state.data['Tanggal'] = pd.to_datetime(st.session_state.data['Tanggal'], errors='coerce')
+            st.session_state.data = st.session_state.data.dropna(subset=['Tanggal'])
+    
+            # Ekstrak Bulan
+            st.session_state.data['Bulan'] = st.session_state.data['Tanggal'].dt.to_period('M').astype(str)
+    
+            # Agregasi total omset per bulan, tenaga penjual, dan departemen
+            monthly_revenue = st.session_state.data.groupby(['Bulan', 'Nama Tenaga Penjual', 'Nama Departemen'])[['Penjualan']].sum().reset_index()
+    
+            # Menambahkan kolom untuk omset tertinggi per bulan
+            monthly_revenue['Omset Tertinggi'] = monthly_revenue.groupby('Bulan')['Penjualan'].transform(max)
+    
+            # Tampilkan DataFrame ringkasan
+            st.write("Ringkasan Omset Bulanan:")
+            st.dataframe(monthly_revenue)
+    
+            # Dropdown untuk memilih Tenaga Penjual
+            semua_nama_tenaga_penjual = monthly_revenue['Nama Tenaga Penjual'].unique()
+            selected_nama_tenaga_penjual = st.selectbox("Pilih Nama Tenaga Penjual", semua_nama_tenaga_penjual)
+    
+            # Filter data berdasarkan tenaga penjual yang dipilih
+            filtered_revenue_by_salesperson = monthly_revenue[monthly_revenue['Nama Tenaga Penjual'] == selected_nama_tenaga_penjual]
+    
+            # Tampilkan statistik bulanan untuk tenaga penjual yang dipilih
+            st.write(f"Statistik Omset Bulanan untuk {selected_nama_tenaga_penjual}:")
+            st.dataframe(filtered_revenue_by_salesperson)
+    
+            # Dropdown untuk memilih Barang berdasarkan tenaga penjual yang dipilih
+            semua_nama_barang = st.session_state.data[st.session_state.data['Nama Tenaga Penjual'] == selected_nama_tenaga_penjual]['Nama Barang'].unique()
+            selected_nama_barang = st.selectbox("Pilih Nama Barang", semua_nama_barang)
+    
+            # Filter data berdasarkan barang yang dipilih
+            filtered_sales = st.session_state.data[(st.session_state.data['Nama Tenaga Penjual'] == selected_nama_tenaga_penjual) & 
+                                                    (st.session_state.data['Nama Barang'] == selected_nama_barang)]
+    
+            monthly_product_revenue = filtered_sales.groupby('Bulan')[['Penjualan']].sum().reset_index()
+    
+            # Plot grafik Omset untuk barang yang dipilih oleh tenaga penjual yang dipilih
+            fig = px.line(monthly_product_revenue, x='Bulan', y='Penjualan', 
+                          title=f'Tren Omset Penjualan Bulanan untuk {selected_nama_barang} oleh {selected_nama_tenaga_penjual}',
+                          markers=True,
+                          labels={'Bulan': 'Bulan', 'Penjualan': 'Total Omset (Rupiah)'})
+    
+            # Format y-axis untuk menampilkan dalam angka asli
+            fig.update_yaxes(tickprefix="Rp ")  # Menambahkan simbol rupiah
+    
+            st.plotly_chart(fig, key='fig_salesperson_product_revenue') 
+    
+            # Tampilkan data rinci untuk barang yang dipilih
+            st.write(f"Data Rinci untuk {selected_nama_barang} oleh {selected_nama_tenaga_penjual}:")
+            st.dataframe(filtered_sales[['Tanggal', 'Penjualan', 'Kuantitas']])  # Display relevant columns
+    
+            # Menampilkan omset tertinggi per bulan
+            highest_revenue = monthly_revenue.loc[monthly_revenue['Penjualan'] == monthly_revenue['Omset Tertinggi'], ['Bulan', 'Nama Tenaga Penjual', 'Penjualan']]
+            highest_revenue = highest_revenue.rename(columns={'Penjualan': 'Omset Tertinggi'})
+            st.write("Omset Tertinggi per Bulan:")
+            highest_revenue['Omset Tertinggi'] = highest_revenue['Omset Tertinggi'].apply(lambda x: f"Rp {x:,.0f}")  # Format sebagai rupiah
+            st.dataframe(highest_revenue)
+            
+            # Menampilkan omset tertinggi per bulan
+            #highest_revenue = monthly_revenue.loc[monthly_revenue['Penjualan'] == monthly_revenue['Omset Tertinggi'], ['Bulan', 'Nama Tenaga Penjual', 'Penjualan']]
+            #highest_revenue = highest_revenue.rename(columns={'Penjualan': 'Omset Tertinggi'})
+            #st.write("Omset Tertinggi per Bulan:")
+            #st.dataframe(highest_revenue)
+    
+        else:
+            st.warning("Tidak ada data yang dimuat. Silakan pastikan data sudah tersedia di menu awal.")
+
     # Menambahkan opsi untuk mereset seluruh chat history
     if st.sidebar.button("Reset Chat History"):
         st.session_state.messages = []  # Clear the chat history
         st.success("Chat history telah direset. Anda dapat memulai percakapan baru.")
 
-    # Menampilkan data yang telah dimasukkan
-    #if st.button("Tampilkan Data"):
-        #sorted_data = st.session_state.data.sort_values(by=["Tanggal", "Pelanggan", "Nama Barang", "Kuantitas", "Penjualan", "Kota Pengiriman Pelanggan"])
-        #st.write(sorted_data)
-
-    # Menyimpan data ke file CSV
-    #if st.button("Simpan Data ke CSV"):
-        #st.session_state.data.to_csv("data_akuntansi.csv", index=False)
-        #st.success("Data telah disimpan ke file CSV.")
-
     # Menambahkan fitur untuk menghapus data
-    if st.button("Hapus Data Terakhir"):
-        if not st.session_state.data.empty:
-            st.session_state.data = st.session_state.data[:-1]
-            st.success("Data terakhir telah dihapus.")
-        else:
-            st.warning("Tidak ada data untuk dihapus.")
-
-    # Menambahkan fitur untuk mengedit data
-    #if st.button("Edit Data"):
-        #edit_index = st.number_input("Masukkan Indeks Data yang Ingin Diedit", min_value=0, max_value=len(st.session_state.data)-1)
-        #if edit_index is not None and edit_index < len(st.session_state.data):
-            #edited_row = st.session_state.data.iloc[edit_index]
-            #new_vendor = st.text_input("Pelanggan", value=edited_row["Pelanggan"])
-            #new_barang = st.text_input("Nama Barang", value=edited_row["Nama Barang"])
-            #new_amount = st.number_input("Penjualan", value=edited_row["Penjualan"])
-            #new_quantity = st.number_input("Kuantitas", value=edited_row["Kuantitas"])
-            #new_date = st.date_input("Tanggal", value=edited_row["Tanggal"])
-            
-            #if st.button("Simpan Perubahan"):
-                #st.session_state.data.at[ edit_index, "Pelanggan"] = new_vendor
-                #st.session_state.data.at[edit_index, "Nama Barang"] = new_barang
-                #st.session_state.data.at[edit_index, "Penjualan"] = new_amount
-                #st.session_state.data.at[edit_index, "Kuantitas"] = new_quantity
-                #st.session_state.data.at[edit_index, "Tanggal"] = new_date
-                #st.success("Data telah diperbarui.")
-
-    # Opsi untuk menghapus data
-    #st.sidebar.subheader("Hapus Data")
-    #if st.sidebar.button("Hapus Semua Data"):
-        #st.session_state.data = pd.DataFrame(columns=[])
-        #st.success("Semua data telah dihapus.")
+    #if st.button("Hapus Data Terakhir"):
+        #if not st.session_state.data.empty:
+            #st.session_state.data = st.session_state.data[:-1]
+            #st.success("Data terakhir telah dihapus.")
+        #else:
+            #st.warning("Tidak ada data untuk dihapus.")
 
     # Panggil fungsi untuk menyimpan data ke database
     if st.button("Simpan Data ke Database"):
         save_data_to_database(st.session_state.data)
         st.success("Data telah disimpan ke database.")
-
-    # Menambahkan fitur untuk menampilkan data terbaru
-    #if st.button("Tampilkan Data Terbaru"):
-        #if not st.session_state.data.empty:
-            #latest_data = st.session_state.data.tail(5)
-            #st.write("Data Terbaru:")
-            #st.dataframe(latest_data)
-        #else:
-            #st.warning("Tidak ada data untuk ditampilkan.")
 
     # Menambahkan opsi untuk menghapus entri tertentu
     st.sidebar.subheader("Hapus Entri Tertentu")
