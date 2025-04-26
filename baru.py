@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import holidays
 from datetime import datetime
-#import sqlite3
+import sqlite3
 from statsmodels.tsa.arima.model import ARIMA
 from statsmodels.tsa.statespace.sarimax import SARIMAX
 from statsmodels.tsa.stattools import adfuller
@@ -21,29 +21,29 @@ import plotly.express as px
 import re
 
 # Koneksi ke database SQLite
-#def create_connection():
-    #conn = sqlite3.connect("forecasting_results.db")
-    #return conn
+def create_connection():
+    conn = sqlite3.connect("forecasting_results.db")
+    return conn
 
-#def create_table():
-    #conn = create_connection()
-    #cursor = conn.cursor()
-    #cursor.execute('''
-        #CREATE TABLE IF NOT EXISTS forecasts (
-            #id INTEGER PRIMARY KEY AUTOINCREMENT,
-            #product_name TEXT,
-            #month TEXT,
-            #sales REAL,
-            #quantity REAL,
-            #method TEXT,
-            #created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        #)
-    #''')
-    #conn.commit()
-    #conn.close()
+def create_table():
+    conn = create_connection()
+    cursor = conn.cursor()
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS forecasts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            product_name TEXT,
+            month TEXT,
+            sales REAL,
+            quantity REAL,
+            method TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+    conn.commit()
+    conn.close()
 
 # Create the table when the application starts
-#create_table()
+create_table()
 
 # Judul aplikasi 
 st.title("📈 Aplikasi")
@@ -1262,74 +1262,6 @@ else:
         else:
             st.warning("Tidak ada data yang dimuat. Silakan pastikan data sudah tersedia di menu awal.")   
 
-    #elif menu == "Statistik Sales Omsetnya":
-        #st.subheader("Statistik Perkembangan Sales Bulanan Omsetnya")
-    
-        #if not st.session_state.data.empty:
-            # Pastikan Tanggal format datetime
-            #st.session_state.data['Tanggal'] = pd.to_datetime(st.session_state.data['Tanggal'], errors='coerce')
-            #st.session_state.data = st.session_state.data.dropna(subset=['Tanggal'])
-    
-            # Ekstrak Bulan
-            #st.session_state.data['Bulan'] = st.session_state.data['Tanggal'].dt.to_period('M').astype(str)
-    
-            # Agregasi total omset per bulan, tenaga penjual, dan departemen
-            #monthly_revenue = st.session_state.data.groupby(['Bulan', 'Nama Tenaga Penjual', 'Nama Departemen'])[['Penjualan']].sum().reset_index()
-    
-            # Menambahkan kolom untuk omset tertinggi per bulan
-            #monthly_revenue['Omset Tertinggi'] = monthly_revenue.groupby('Bulan')['Penjualan'].transform(max)
-    
-            # Tampilkan DataFrame ringkasan
-            #st.write("Ringkasan Omset Bulanan:")
-            #st.dataframe(monthly_revenue)
-    
-            # Dropdown untuk memilih Tenaga Penjual
-            #semua_nama_tenaga_penjual = monthly_revenue['Nama Tenaga Penjual'].unique()
-            #selected_nama_tenaga_penjual = st.selectbox("Pilih Nama Tenaga Penjual", semua_nama_tenaga_penjual)
-    
-            # Filter data berdasarkan tenaga penjual yang dipilih
-            #filtered_revenue_by_salesperson = monthly_revenue[monthly_revenue['Nama Tenaga Penjual'] == selected_nama_tenaga_penjual]
-    
-            # Tampilkan statistik bulanan untuk tenaga penjual yang dipilih
-            #st.write(f"Statistik Omset Bulanan untuk {selected_nama_tenaga_penjual}:")
-            #st.dataframe(filtered_revenue_by_salesperson)
-    
-            # Dropdown untuk memilih Barang berdasarkan tenaga penjual yang dipilih
-            #semua_nama_barang = st.session_state.data[st.session_state.data['Nama Tenaga Penjual'] == selected_nama_tenaga_penjual]['Nama Barang'].unique()
-            #selected_nama_barang = st.selectbox("Pilih Nama Barang", semua_nama_barang)
-    
-            # Filter data berdasarkan barang yang dipilih
-            #filtered_sales = st.session_state.data[(st.session_state.data['Nama Tenaga Penjual'] == selected_nama_tenaga_penjual) & 
-                                                    #(st.session_state.data['Nama Barang'] == selected_nama_barang)]
-    
-            #monthly_product_revenue = filtered_sales.groupby('Bulan')[['Penjualan']].sum().reset_index()
-    
-            # Plot grafik Omset untuk barang yang dipilih oleh tenaga penjual yang dipilih
-            #fig = px.line(monthly_product_revenue, x='Bulan', y='Penjualan', 
-                          #title=f'Tren Omset Penjualan Bulanan untuk {selected_nama_barang} oleh {selected_nama_tenaga_penjual}',
-                          #markers=True,
-                          #labels={'Bulan': 'Bulan', 'Penjualan': 'Total Omset (Rupiah)'})
-    
-            # Format y-axis untuk menampilkan dalam angka asli
-            #fig.update_yaxes(tickprefix="Rp ")  # Menambahkan simbol rupiah
-    
-            #st.plotly_chart(fig, key='fig_salesperson_product_revenue') 
-    
-            # Tampilkan data rinci untuk barang yang dipilih
-            #st.write(f"Data Rinci untuk {selected_nama_barang} oleh {selected_nama_tenaga_penjual}:")
-            #st.dataframe(filtered_sales[['Tanggal', 'Penjualan', 'Kuantitas']])  # Display relevant columns
-    
-            # Menampilkan omset tertinggi per bulan
-            #highest_revenue = monthly_revenue.loc[monthly_revenue['Penjualan'] == monthly_revenue['Omset Tertinggi'], ['Bulan', 'Nama Tenaga Penjual', 'Penjualan']]
-            #highest_revenue = highest_revenue.rename(columns={'Penjualan': 'Omset Tertinggi'})
-            #st.write("Omset Tertinggi per Bulan:")
-            #highest_revenue['Omset Tertinggi'] = highest_revenue['Omset Tertinggi'].apply(lambda x: f"Rp {x:,.0f}")  # Format sebagai rupiah
-            #st.dataframe(highest_revenue)
-        #else:
-            #st.warning("Tidak ada data yang dimuat. Silakan pastikan data sudah tersedia di menu awal.")
-
-
-
     elif menu == "Statistik Sales Omsetnya":
         st.subheader("Statistik Perkembangan Sales Bulanan Omsetnya")
     
@@ -1388,13 +1320,6 @@ else:
             # Tampilkan data rinci untuk barang yang dipilih
             st.write(f"Data Rinci untuk {selected_nama_barang} oleh {selected_nama_tenaga_penjual}:")
             st.dataframe(filtered_sales[['Tanggal', 'Penjualan', 'Kuantitas']])  # Display relevant columns
-    
-            # Menampilkan omset tertinggi per bulan
-            #highest_revenue = monthly_revenue.loc[monthly_revenue['Penjualan'] == monthly_revenue['Penjualan'].max(), ['Bulan', 'Nama Tenaga Penjual', 'Penjualan']]
-            #highest_revenue = highest_revenue.rename(columns={'Penjualan': 'Omset Tertinggi'})
-            #st.write("Omset Tertinggi per Bulan:")
-            #highest_revenue['Omset Tertinggi'] = highest_revenue['Omset Tertinggi'].apply(lambda x: f"Rp {x:,.0f}")  # Format sebagai rupiah
-            #st.dataframe(highest_revenue)
 
             # Menampilkan omset tertinggi per bulan
             #highest_revenue = monthly_revenue.loc[monthly_revenue['Penjualan'] == monthly_revenue['Omset Tertinggi'], ['Bulan', 'Nama Tenaga Penjual', 'Penjualan']]
@@ -1404,16 +1329,10 @@ else:
             #st.dataframe(highest_revenue)
     
             # Menambahkan tabel omset per bulan dari yang tertinggi hingga terendah
-            monthly_ranked_revenue = monthly_revenue.groupby('Bulan').apply(lambda x: x.sort_values('Penjualan', ascending=False)).reset_index(drop=True)
-            st.write("Tabel Omset Per Bulan dari Tertinggi ke Terendah:")
-            st.dataframe(monthly_ranked_revenue.rename(columns={'Penjualan': 'Total Omset'}))
+            #monthly_ranked_revenue = monthly_revenue.groupby('Bulan').apply(lambda x: x.sort_values('Penjualan', ascending=False)).reset_index(drop=True)
+            #st.write("Tabel Omset Per Bulan dari Tertinggi ke Terendah:")
+            #st.dataframe(monthly_ranked_revenue.rename(columns={'Penjualan': 'Total Omset'}))
 
-            # Menampilkan omset tertinggi per bulan
-            #highest_revenue = monthly_revenue.loc[monthly_revenue['Penjualan'] == monthly_revenue['Omset Tertinggi'], ['Bulan', 'Nama Tenaga Penjual', 'Penjualan']]
-            #highest_revenue = highest_revenue.rename(columns={'Penjualan': 'Omset Tertinggi'})
-            #st.write("Omset Tertinggi per Bulan:")
-            #highest_revenue['Omset Tertinggi'] = highest_revenue['Omset Tertinggi'].apply(lambda x: f"Rp {x:,.0f}")  # Format sebagai rupiah
-            #st.dataframe(highest_revenue)
         else:
             st.warning("Tidak ada data yang dimuat. Silakan pastikan data sudah tersedia di menu awal.")
 
