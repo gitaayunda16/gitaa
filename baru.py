@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import holidays
 from datetime import datetime
-import sqlite3
+#import sqlite3
 from statsmodels.tsa.arima.model import ARIMA
 from statsmodels.tsa.statespace.sarimax import SARIMAX
 from statsmodels.tsa.stattools import adfuller
@@ -21,29 +21,29 @@ import plotly.express as px
 import re
 
 # Koneksi ke database SQLite
-def create_connection():
-    conn = sqlite3.connect("forecasting_results.db")
-    return conn
+#def create_connection():
+    #conn = sqlite3.connect("forecasting_results.db")
+    #return conn
 
-def create_table():
-    conn = create_connection()
-    cursor = conn.cursor()
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS forecasts (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            product_name TEXT,
-            month TEXT,
-            sales REAL,
-            quantity REAL,
-            method TEXT,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    ''')
-    conn.commit()
-    conn.close()
+#def create_table():
+    #conn = create_connection()
+    #cursor = conn.cursor()
+    #cursor.execute('''
+        #CREATE TABLE IF NOT EXISTS forecasts (
+            #id INTEGER PRIMARY KEY AUTOINCREMENT,
+            #product_name TEXT,
+            #month TEXT,
+            #sales REAL,
+            #quantity REAL,
+            #method TEXT,
+            #created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        #)
+    #''')
+    #conn.commit()
+    #conn.close()
 
 # Create the table when the application starts
-create_table()
+#create_table()
 
 # Judul aplikasi 
 st.title("📈 Aplikasi")
