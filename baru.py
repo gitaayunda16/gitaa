@@ -19,7 +19,7 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import ChatPromptTemplate
 import plotly.express as px
 import re
-
+import os
 # Koneksi ke database SQLite
 def create_connection():
     conn = sqlite3.connect("forecasting_results.db")
@@ -75,8 +75,6 @@ def get_event_dates(year):
         elif 'Natal' in name:
             event_dates['Natal'].append(date)
     return event_dates
-
-#untuk event 
 
 # Mendapatkan event untuk tahun ini
 current_year = datetime.now().year
@@ -259,10 +257,27 @@ def chat(contexts, history, question):
     
     return result
 
+ # Lokasi file penyimpanan data
+DATA_FILE = "saved_data.pkl"
+    
+# Fungsi untuk load data dari file
+def load_data():
+    if os.path.exists(DATA_FILE):
+        return pd.read_pickle(DATA_FILE)
+    return None
+    
+# Fungsi untuk save data ke file
+def save_data(data):
+    data.to_pickle(DATA_FILE)
+
 # Cek apakah pengguna sudah login
 PASSWORD = "admin1234"  # Ganti dengan password yang diinginkan
 if 'logged_in' not in st.session_state:
     st.session_state.logged_in = False
+
+ # Inisialisasi session state
+if "data" not in st.session_state:
+    st.session_state.data = load_data()
 
 # Form untuk memasukkan password
 if not st.session_state.logged_in:
@@ -293,43 +308,80 @@ else:
         "Statistik Sales Omsetnya"
     ])
 
+
+    # Lokasi file penyimpanan data
+    #DATA_FILE = "saved_data.pkl"
+    
+    # Fungsi untuk load data dari file
+    #def load_data():
+        #if os.path.exists(DATA_FILE):
+            #return pd.read_pickle(DATA_FILE)
+        #return None
+    
+    # Fungsi untuk save data ke file
+    #def save_data(data):
+        #data.to_pickle(DATA_FILE)
+    
+    # Inisialisasi session state
+    #if "data" not in st.session_state:
+        #st.session_state.data = load_data()
+    
     # Fungsi Unggah Data
     if menu == "Unggah Data":
         st.subheader("Unggah Data dari File")
-        uploaded_files = st.file_uploader("Pilih file CSV atau Excel", type=["csv", "xlsx"], accept_multiple_files=True)
-        
+    
+        # Tampilkan data yang sudah ada
+        if st.session_state.data is not None:
+            st.write("Data yang sudah diunggah (tersimpan):")
+            st.dataframe(st.session_state.data)
+    
+        # Upload baru
+        uploaded_files = st.file_uploader(
+            "Pilih file CSV atau Excel (bisa lebih dari satu)",
+            type=["csv", "xlsx"],
+            accept_multiple_files=True
+        )
+    
         if uploaded_files:
-            all_data = []  # List untuk menyimpan semua DataFrame yang diunggah
-            
+            all_data = []
+    
             for uploaded_file in uploaded_files:
                 if uploaded_file.name.endswith('.csv'):
                     new_data = pd.read_csv(uploaded_file)
                 else:
                     new_data = pd.read_excel(uploaded_file)
-                
+    
                 # Validasi kolom
-                required_columns = []  # Ganti dengan kolom yang diperlukan
+                required_columns = []  # Tambahkan nama kolom wajib jika perlu
                 has_date_column = 'Tanggal' in new_data.columns
-                
-                # Mengonversi kolom 'Tanggal' menjadi datetime jika ada
+    
+                # Konversi kolom Tanggal
                 if has_date_column:
                     new_data['Tanggal'] = pd.to_datetime(new_data['Tanggal'], errors='coerce')
-                
-                # Memeriksa apakah semua kolom yang diperlukan ada
+    
+                # Validasi kolom
                 if all(col in new_data.columns for col in required_columns):
-                    # Menambahkan kolom event jika ada fungsi add_event_column
                     if 'add_event_column' in locals():
                         new_data = add_event_column(new_data)
-                    all_data.append(new_data)  # Menyimpan DataFrame yang valid
+                    all_data.append(new_data)
                     st.success(f"Data dari {uploaded_file.name} berhasil diunggah.")
                 else:
                     st.warning(f"Data dari {uploaded_file.name} tidak lengkap. Pastikan semua kolom yang diperlukan ada.")
-            
-            # Menggabungkan semua data yang valid
+    
+            # Gabungkan data baru
             if all_data:
-                st.session_state.data = pd.concat(all_data, ignore_index=True)
-                st.write("Data yang diunggah:")
-                st.dataframe(st.session_state.data)  # Menampilkan DataFrame dari semua data yang diunggah
+                if st.session_state.data is not None:
+                    st.session_state.data = pd.concat([st.session_state.data] + all_data, ignore_index=True)
+                else:
+                    st.session_state.data = pd.concat(all_data, ignore_index=True)
+    
+                # Simpan ke file lokal
+                save_data(st.session_state.data)
+    
+                st.success("Data berhasil diperbarui dan disimpan!")
+                st.write("Data saat ini:")
+                st.dataframe(st.session_state.data)
+
 
     # Fungsi Penganggaran dan Peramalan
     elif menu == "Penganggaran dan Peramalan":
@@ -1352,7 +1404,6 @@ else:
         st.subheader("Statistik Perkembangan Sales Bulanan Omsetnya")
     
         if not st.session_state.data.empty:
-            # Pastikan Tanggal format datetime
             st.session_state.data['Tanggal'] = pd.to_datetime(st.session_state.data['Tanggal'], errors='coerce')
             st.session_state.data = st.session_state.data.dropna(subset=['Tanggal'])
     
