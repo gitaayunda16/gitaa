@@ -1262,97 +1262,10 @@ else:
         else:
             st.warning("Tidak ada data yang dimuat. Silakan pastikan data sudah tersedia di menu awal.")   
             
-    elif menu == "Statistik Sales Omsetnya":
-        st.subheader("Statistik Perkembangan Sales Bulanan Omsetnya")
-    
-        if not st.session_state.data.empty:
-            st.session_state.data['Tanggal'] = pd.to_datetime(st.session_state.data['Tanggal'], errors='coerce')
-            st.session_state.data = st.session_state.data.dropna(subset=['Tanggal'])
-    
-            # Ekstrak Bulan
-            st.session_state.data['Bulan'] = st.session_state.data['Tanggal'].dt.to_period('M').astype(str)
-    
-            # Agregasi total omset per bulan dan tenaga penjual
-            monthly_revenue = st.session_state.data.groupby(['Bulan', 'Nama Tenaga Penjual'])[['Penjualan']].sum().reset_index()
-    
-            # Mengurutkan data berdasarkan Bulan dan Penjualan (dari tertinggi ke terendah)
-            monthly_revenue = monthly_revenue.sort_values(by=['Bulan', 'Penjualan'], ascending=[True, False])
-    
-            # Tampilkan DataFrame ringkasan
-            st.write("Ringkasan Omset Bulanan:")
-            st.dataframe(monthly_revenue)
-    
-            # Dropdown untuk memilih Tenaga Penjual
-            semua_nama_tenaga_penjual = monthly_revenue['Nama Tenaga Penjual'].unique()
-            selected_nama_tenaga_penjual = st.selectbox("Pilih Nama Tenaga Penjual", semua_nama_tenaga_penjual)
-    
-            # Filter data berdasarkan tenaga penjual yang dipilih
-            filtered_revenue_by_salesperson = monthly_revenue[monthly_revenue['Nama Tenaga Penjual'] == selected_nama_tenaga_penjual]
-    
-            # Tampilkan statistik bulanan untuk tenaga penjual yang dipilih
-            st.write(f"Statistik Omset Bulanan untuk {selected_nama_tenaga_penjual}:")
-            st.dataframe(filtered_revenue_by_salesperson)
-            
-            # Dropdown untuk memilih Barang berdasarkan tenaga penjual yang dipilih
-            semua_nama_barang = st.session_state.data[st.session_state.data['Nama Tenaga Penjual'] == selected_nama_tenaga_penjual]['Nama Barang'].unique()
-            selected_nama_barang = st.selectbox("Pilih Nama Barang", semua_nama_barang)
-            
-            # Filter data berdasarkan barang yang dipilih
-            filtered_sales = st.session_state.data[(st.session_state.data['Nama Tenaga Penjual'] == selected_nama_tenaga_penjual) & 
-                                                    (st.session_state.data['Nama Barang'] == selected_nama_barang)]
-    
-            monthly_product_revenue = filtered_sales.groupby('Bulan')[['Penjualan']].sum().reset_index()
-    
-            # Plot grafik Omset untuk barang yang dipilih oleh tenaga penjual yang dipilih
-            fig = px.line(monthly_product_revenue, x='Bulan', y='Penjualan', 
-                          title=f'Tren Omset Penjualan Bulanan untuk {selected_nama_barang} oleh {selected_nama_tenaga_penjual}',
-                          markers=True,
-                          labels={'Bulan': 'Bulan', 'Penjualan': 'Total Omset'})
-    
-            st.plotly_chart(fig, key='fig_salesperson_product_revenue') 
-    
-            # Tampilkan data rinci untuk barang yang dipilih
-            st.write(f"Data Rinci untuk {selected_nama_barang} oleh {selected_nama_tenaga_penjual}:")
-            st.dataframe(filtered_sales[['Tanggal', 'Penjualan', 'Kuantitas']])  # Display relevant columns
-            
-            overall_monthly_revenue = st.session_state.data.groupby(['Bulan', 'Nama Tenaga Penjual'])[['Penjualan']].sum().reset_index()
-            
-            # Tampilkan tabel omset keseluruhan
-            st.write("Tabel Omset Keseluruhan per Bulan untuk Setiap Tenaga Penjual:")
-            st.dataframe(overall_monthly_revenue)
-    
-            # Plot grafik omset keseluruhan
-            overall_fig = px.line(overall_monthly_revenue, x='Bulan', y='Penjualan', color='Nama Tenaga Penjual',
-                                  title='Tren Omset Keseluruhan per Bulan untuk Setiap Tenaga Penjual ',
-                                  markers=True,
-                                  labels={'Bulan': 'Bulan', 'Penjualan': 'Total Omset'})
-            
-            st.plotly_chart(overall_fig, key='fig_overall_revenue') 
-    
-            # Dropdown untuk memilih Tenaga Penjual untuk omset keseluruhan
-            selected_nama_tenaga_penjual_overall = st.selectbox("Pilih Nama Tenaga Penjual untuk Omset Keseluruhan", semua_nama_tenaga_penjual)
-    
-            # Filter data untuk omset keseluruhan berdasarkan tenaga penjual yang dipilih
-            overall_filtered_revenue = overall_monthly_revenue[overall_monthly_revenue['Nama Tenaga Penjual'] == selected_nama_tenaga_penjual_overall]
-    
-            # Plot grafik omset keseluruhan untuk tenaga penjual yang dipilih
-            overall_selected_fig = px.line(overall_filtered_revenue, x='Bulan', y='Penjualan',
-                                            title=f'Tren Omset Keseluruhan Bulanan untuk {selected_nama_tenaga_penjual_overall}',
-                                            markers=True,
-                                            labels={'Bulan': 'Bulan', 'Penjualan': 'Total Omset'})
-    
-            st.plotly_chart(overall_selected_fig, key='fig_selected_overall_revenue')
-
-            st.write(f"Tabel Omset Keseluruhan untuk {selected_nama_tenaga_penjual_overall}:")
-            st.dataframe(overall_filtered_revenue)
-        else:
-            st.warning("Tidak ada data yang dimuat. Silakan Pastikan data sudah tersedia di menu awal.")
-
     #elif menu == "Statistik Sales Omsetnya":
         #st.subheader("Statistik Perkembangan Sales Bulanan Omsetnya")
     
         #if not st.session_state.data.empty:
-            # Pastikan Tanggal format datetime
             #st.session_state.data['Tanggal'] = pd.to_datetime(st.session_state.data['Tanggal'], errors='coerce')
             #st.session_state.data = st.session_state.data.dropna(subset=['Tanggal'])
     
@@ -1369,26 +1282,21 @@ else:
             #st.write("Ringkasan Omset Bulanan:")
             #st.dataframe(monthly_revenue)
     
-            # Ambil bulan terakhir
-            #last_month = monthly_revenue['Bulan'].max()
-            # Filter data untuk semua bulan kecuali bulan terakhir
-            #filtered_revenue = monthly_revenue[monthly_revenue['Bulan'] != last_month]
-    
             # Dropdown untuk memilih Tenaga Penjual
-            #semua_nama_tenaga_penjual = filtered_revenue['Nama Tenaga Penjual'].unique()
+            #semua_nama_tenaga_penjual = monthly_revenue['Nama Tenaga Penjual'].unique()
             #selected_nama_tenaga_penjual = st.selectbox("Pilih Nama Tenaga Penjual", semua_nama_tenaga_penjual)
     
             # Filter data berdasarkan tenaga penjual yang dipilih
-            #filtered_revenue_by_salesperson = filtered_revenue[filtered_revenue['Nama Tenaga Penjual'] == selected_nama_tenaga_penjual]
+            #filtered_revenue_by_salesperson = monthly_revenue[monthly_revenue['Nama Tenaga Penjual'] == selected_nama_tenaga_penjual]
     
             # Tampilkan statistik bulanan untuk tenaga penjual yang dipilih
             #st.write(f"Statistik Omset Bulanan untuk {selected_nama_tenaga_penjual}:")
             #st.dataframe(filtered_revenue_by_salesperson)
-    
+            
             # Dropdown untuk memilih Barang berdasarkan tenaga penjual yang dipilih
             #semua_nama_barang = st.session_state.data[st.session_state.data['Nama Tenaga Penjual'] == selected_nama_tenaga_penjual]['Nama Barang'].unique()
             #selected_nama_barang = st.selectbox("Pilih Nama Barang", semua_nama_barang)
-    
+            
             # Filter data berdasarkan barang yang dipilih
             #filtered_sales = st.session_state.data[(st.session_state.data['Nama Tenaga Penjual'] == selected_nama_tenaga_penjual) & 
                                                     #(st.session_state.data['Nama Barang'] == selected_nama_barang)]
@@ -1406,53 +1314,140 @@ else:
             # Tampilkan data rinci untuk barang yang dipilih
             #st.write(f"Data Rinci untuk {selected_nama_barang} oleh {selected_nama_tenaga_penjual}:")
             #st.dataframe(filtered_sales[['Tanggal', 'Penjualan', 'Kuantitas']])  # Display relevant columns
-    
-            # Tampilkan grafik omset keseluruhan untuk setiap tenaga penjual, kecuali bulan terakhir
-            #overall_monthly_revenue = monthly_revenue.groupby(['Bulan', 'Nama Tenaga Penjual'])[['Penjualan']].sum().reset_index()
-            #overall_filtered_revenue = overall_monthly_revenue[overall_monthly_revenue['Bulan'] != last_month]
+            
+            #overall_monthly_revenue = st.session_state.data.groupby(['Bulan', 'Nama Tenaga Penjual'])[['Penjualan']].sum().reset_index()
+            
+            # Tampilkan tabel omset keseluruhan
+            #st.write("Tabel Omset Keseluruhan per Bulan untuk Setiap Tenaga Penjual:")
+            #st.dataframe(overall_monthly_revenue)
     
             # Plot grafik omset keseluruhan
-            #overall_fig = px.line(overall_filtered_revenue, x='Bulan', y='Penjualan', color='Nama Tenaga Penjual',
-                                  #title='Tren Omset Keseluruhan per Bulan untuk Setiap Tenaga Penjual (Tanpa Bulan Terakhir)',
+            #overall_fig = px.line(overall_monthly_revenue, x='Bulan', y='Penjualan', color='Nama Tenaga Penjual',
+                                  #title='Tren Omset Keseluruhan per Bulan untuk Setiap Tenaga Penjual ',
                                   #markers=True,
                                   #labels={'Bulan': 'Bulan', 'Penjualan': 'Total Omset'})
+            
+            #st.plotly_chart(overall_fig, key='fig_overall_revenue') 
     
-            #st.plotly_chart(overall_fig, key='fig_overall_sales_revenue') # Dropdown untuk memilih Tenaga Penjual untuk omset keseluruhan
+            # Dropdown untuk memilih Tenaga Penjual untuk omset keseluruhan
             #selected_nama_tenaga_penjual_overall = st.selectbox("Pilih Nama Tenaga Penjual untuk Omset Keseluruhan", semua_nama_tenaga_penjual)
     
             # Filter data untuk omset keseluruhan berdasarkan tenaga penjual yang dipilih
-            #overall_filtered_revenue_by_salesperson = overall_filtered_revenue[overall_filtered_revenue['Nama Tenaga Penjual'] == selected_nama_tenaga_penjual_overall]
+            #overall_filtered_revenue = overall_monthly_revenue[overall_monthly_revenue['Nama Tenaga Penjual'] == selected_nama_tenaga_penjual_overall]
     
-            # Tampilkan grafik omset keseluruhan untuk tenaga penjual yang dipilih
-            #overall_personal_fig = px.line(overall_filtered_revenue_by_salesperson, x='Bulan', y='Penjualan',
-                                            #title=f'Tren Omset Keseluruhan untuk {selected_nama_tenaga_penjual_overall}',
+            # Plot grafik omset keseluruhan untuk tenaga penjual yang dipilih
+            #overall_selected_fig = px.line(overall_filtered_revenue, x='Bulan', y='Penjualan',
+                                            #title=f'Tren Omset Keseluruhan Bulanan untuk {selected_nama_tenaga_penjual_overall}',
                                             #markers=True,
                                             #labels={'Bulan': 'Bulan', 'Penjualan': 'Total Omset'})
     
-            #st.plotly_chart(overall_personal_fig, key='fig_personal_overall_sales_revenue')
-    
-            # Tampilkan data rinci untuk omset keseluruhan tenaga penjual yang dipilih
-            #overall_personal_data = st.session_state.data[st.session_state.data['Nama Tenaga Penjual'] == selected_nama_tenaga_penjual_overall]
-            #overall_personal_data_grouped = overall_personal_data.groupby(['Bulan'])[['Penjualan', 'Kuantitas']].sum().reset_index()
-    
-            #st.write(f"Data Rinci untuk Omset Keseluruhan {selected_nama_tenaga_penjual_overall}:")
-            #st.dataframe(overall_personal_data_grouped)
-    
+            #st.plotly_chart(overall_selected_fig, key='fig_selected_overall_revenue')
+
+            #st.write(f"Tabel Omset Keseluruhan untuk {selected_nama_tenaga_penjual_overall}:")
+            #st.dataframe(overall_filtered_revenue)
         #else:
             #st.warning("Tidak ada data yang dimuat. Silakan Pastikan data sudah tersedia di menu awal.")
+
+    elif menu == "Statistik Sales Omsetnya":
+        st.subheader("Statistik Perkembangan Sales Bulanan Omsetnya")
+    
+        if not st.session_state.data.empty:
+            # Pastikan Tanggal format datetime
+            st.session_state.data['Tanggal'] = pd.to_datetime(st.session_state.data['Tanggal'], errors='coerce')
+            st.session_state.data = st.session_state.data.dropna(subset=['Tanggal'])
+    
+            # Ekstrak Bulan
+            st.session_state.data['Bulan'] = st.session_state.data['Tanggal'].dt.to_period('M').astype(str)
+    
+            # Agregasi total omset per bulan dan tenaga penjual
+            monthly_revenue = st.session_state.data.groupby(['Bulan', 'Nama Tenaga Penjual'])[['Penjualan']].sum().reset_index()
+    
+            # Mengurutkan data berdasarkan Bulan dan Penjualan (dari tertinggi ke terendah)
+            monthly_revenue = monthly_revenue.sort_values(by=['Bulan', 'Penjualan'], ascending=[True, False])
+    
+            # Tampilkan DataFrame ringkasan
+            st.write("Ringkasan Omset Bulanan:")
+            st.dataframe(monthly_revenue)
+    
+            # Ambil bulan terakhir
+            last_month = monthly_revenue['Bulan'].max()
+            # Filter data untuk semua bulan kecuali bulan terakhir
+            filtered_revenue = monthly_revenue[monthly_revenue['Bulan'] != last_month]
+    
+            # Dropdown untuk memilih Tenaga Penjual
+            semua_nama_tenaga_penjual = filtered_revenue['Nama Tenaga Penjual'].unique()
+            selected_nama_tenaga_penjual = st.selectbox("Pilih Nama Tenaga Penjual", semua_nama_tenaga_penjual)
+    
+            # Filter data berdasarkan tenaga penjual yang dipilih
+            filtered_revenue_by_salesperson = filtered_revenue[filtered_revenue['Nama Tenaga Penjual'] == selected_nama_tenaga_penjual]
+    
+            # Tampilkan statistik bulanan untuk tenaga penjual yang dipilih
+            st.write(f"Statistik Omset Bulanan untuk {selected_nama_tenaga_penjual}:")
+            st.dataframe(filtered_revenue_by_salesperson)
+    
+            # Dropdown untuk memilih Barang berdasarkan tenaga penjual yang dipilih
+            semua_nama_barang = st.session_state.data[st.session_state.data['Nama Tenaga Penjual'] == selected_nama_tenaga_penjual]['Nama Barang'].unique()
+            selected_nama_barang = st.selectbox("Pilih Nama Barang", semua_nama_barang)
+    
+            # Filter data berdasarkan barang yang dipilih
+            filtered_sales = st.session_state.data[(st.session_state.data['Nama Tenaga Penjual'] == selected_nama_tenaga_penjual) & 
+                                                    (st.session_state.data['Nama Barang'] == selected_nama_barang)]
+    
+            monthly_product_revenue = filtered_sales.groupby('Bulan')[['Penjualan']].sum().reset_index()
+    
+            # Plot grafik Omset untuk barang yang dipilih oleh tenaga penjual yang dipilih
+            fig = px.line(monthly_product_revenue, x='Bulan', y='Penjualan', 
+                          title=f'Tren Omset Penjualan Bulanan untuk {selected_nama_barang} oleh {selected_nama_tenaga_penjual}',
+                          markers=True,
+                          labels={'Bulan': 'Bulan', 'Penjualan': 'Total Omset'})
+    
+            st.plotly_chart(fig, key='fig_salesperson_product_revenue') 
+    
+            # Tampilkan data rinci untuk barang yang dipilih
+            st.write(f"Data Rinci untuk {selected_nama_barang} oleh {selected_nama_tenaga_penjual}:")
+            st.dataframe(filtered_sales[['Tanggal', 'Penjualan', 'Kuantitas']])  # Display relevant columns
+    
+            # Tampilkan grafik omset keseluruhan untuk setiap tenaga penjual, kecuali bulan terakhir
+            overall_monthly_revenue = monthly_revenue.groupby(['Bulan', 'Nama Tenaga Penjual'])[['Penjualan']].sum().reset_index()
+            overall_filtered_revenue = overall_monthly_revenue[overall_monthly_revenue['Bulan'] != last_month]
+    
+            # Plot grafik omset keseluruhan
+            overall_fig = px.line(overall_filtered_revenue, x='Bulan', y='Penjualan', color='Nama Tenaga Penjual',
+                                  title='Tren Omset Keseluruhan per Bulan untuk Setiap Tenaga Penjual (Tanpa Bulan Terakhir)',
+                                  markers=True,
+                                  labels={'Bulan': 'Bulan', 'Penjualan': 'Total Omset'})
+    
+            st.plotly_chart(overall_fig, key='fig_overall_sales_revenue')
+    
+            # Dropdown untuk memilih Tenaga Penjual untuk omset keseluruhan
+            selected_nama_tenaga_penjual_overall = st.selectbox("Pilih Nama Tenaga Penjual untuk Omset Keseluruhan", semua_nama_tenaga_penjual)
+    
+            # Filter data untuk omset keseluruhan berdasarkan tenaga penjual yang dipilih
+            overall_filtered_revenue_by_salesperson = overall_filtered_revenue[overall_filtered_revenue['Nama Tenaga Penjual'] == selected_nama_tenaga_penjual_overall]
+    
+            # Tampilkan grafik omset keseluruhan untuk tenaga penjual yang dipilih
+            overall_personal_fig = px.line(overall_filtered_revenue_by_salesperson, x='Bulan', y='Penjualan',
+                                            title=f'Tren Omset Keseluruhan untuk {selected_nama_tenaga_penjual_overall}',
+                                            markers=True,
+                                            labels={'Bulan': 'Bulan', 'Penjualan': 'Total Omset'})
+    
+            st.plotly_chart(overall_personal_fig, key='fig_personal_overall_sales_revenue')
+    
+            # Tampilkan data rinci untuk omset keseluruhan tenaga penjual yang dipilih
+            overall_personal_data = st.session_state.data[st.session_state.data['Nama Tenaga Penjual'] == selected_nama_tenaga_penjual_overall]
+    
+            overall_personal_data_grouped = overall_personal_data.groupby(['Bulan', 'Nama Tenaga Penjual'])[['Penjualan']].sum().reset_index()
+    
+            st.write(f"Data Rinci untuk Omset Keseluruhan {selected_nama_tenaga_penjual_overall}:")
+            st.dataframe(overall_personal_data_grouped)
+    
+        else:
+            st.warning("Tidak ada data yang dimuat. Silakan Pastikan data sudah tersedia di menu awal.")
 
     # Menambahkan opsi untuk mereset seluruh chat history
     if st.sidebar.button("Reset Chat History"):
         st.session_state.messages = []  # Clear the chat history
         st.success("Chat history telah direset. Anda dapat memulai percakapan baru.")
-
-    # Menambahkan fitur untuk menghapus data
-    #if st.button("Hapus Data Terakhir"):
-        #if not st.session_state.data.empty:
-            #st.session_state.data = st.session_state.data[:-1]
-            #st.success("Data terakhir telah dihapus.")
-        #else:
-            #st.warning("Tidak ada data untuk dihapus.")
 
     # Panggil fungsi untuk menyimpan data ke database
     if st.button("Simpan Data ke Database"):
