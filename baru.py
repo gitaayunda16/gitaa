@@ -1464,7 +1464,7 @@ else:
     
             # Plot grafik omset keseluruhan
             overall_fig = px.line(overall_filtered_revenue, x='Bulan', y='Penjualan', color='Nama Tenaga Penjual',
-                                  title='Tren Omset Keseluruhan per Bulan untuk Setiap Tenaga Penjual (Tanpa Bulan Terakhir)',
+                                  title='Tren Omset Keseluruhan per Bulan untuk Setiap Tenaga Penjual',
                                   markers=True,
                                   labels={'Bulan': 'Bulan', 'Penjualan': 'Total Omset'})
     
