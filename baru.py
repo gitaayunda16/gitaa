@@ -305,7 +305,8 @@ else:
         "Penganggaran dan Peramalan",
         "Statistik Customer",
         "Statistik Sales Kuantitas",
-        "Statistik Sales Omsetnya"
+        "Statistik Sales Omsetnya",
+        "Statistik E-commerce"
     ])
 
 
@@ -325,8 +326,8 @@ else:
     # Inisialisasi session state
     #if "data" not in st.session_state:
         #st.session_state.data = load_data()
-    
-    # Fungsi Unggah Data
+
+
     if menu == "Unggah Data":
         st.subheader("Unggah Data dari File")
     
@@ -335,7 +336,6 @@ else:
             st.write("Data yang sudah diunggah (tersimpan):")
             st.dataframe(st.session_state.data)
     
-        # Upload baru
         uploaded_files = st.file_uploader(
             "Pilih file CSV atau Excel (bisa lebih dari satu)",
             type=["csv", "xlsx"],
@@ -351,36 +351,97 @@ else:
                 else:
                     new_data = pd.read_excel(uploaded_file)
     
-                # Validasi kolom
-                required_columns = []  # Tambahkan nama kolom wajib jika perlu
-                has_date_column = 'Tanggal' in new_data.columns
-    
-                # Konversi kolom Tanggal
-                if has_date_column:
-                    new_data['Tanggal'] = pd.to_datetime(new_data['Tanggal'], errors='coerce')
-    
-                # Validasi kolom
-                if all(col in new_data.columns for col in required_columns):
-                    if 'add_event_column' in locals():
-                        new_data = add_event_column(new_data)
-                    all_data.append(new_data)
-                    st.success(f"Data dari {uploaded_file.name} berhasil diunggah.")
+                # Jika kolom 'Tanggal' ada, konversi ke tipe datetime
+                if 'Tanggal' in new_data.columns:
+                    new_data['Tanggal'] = pd.to_datetime(new_data['Tanggal'])
                 else:
-                    st.warning(f"Data dari {uploaded_file.name} tidak lengkap. Pastikan semua kolom yang diperlukan ada.")
+                    st.warning(f"Kolom 'Tanggal' tidak ditemukan di {uploaded_file.name}. Data akan tetap diunggah tanpa kolom 'Tanggal'.")
     
-            # Gabungkan data baru
+                # Jika ada fungsi lain misalnya process_date_column atau add_event_column
+                # new_data = process_date_column(new_data)
+                # if 'add_event_column' in locals():
+                #     new_data = add_event_column(new_data)
+    
+                all_data.append(new_data)
+                st.success(f"Data dari {uploaded_file.name} berhasil diunggah.")
+    
             if all_data:
                 if st.session_state.data is not None:
                     st.session_state.data = pd.concat([st.session_state.data] + all_data, ignore_index=True)
                 else:
                     st.session_state.data = pd.concat(all_data, ignore_index=True)
     
-                # Simpan ke file lokal
                 save_data(st.session_state.data)
     
                 st.success("Data berhasil diperbarui dan disimpan!")
                 st.write("Data saat ini:")
                 st.dataframe(st.session_state.data)
+    
+    
+    # Fungsi Unggah Data
+    #if menu == "Unggah Data":
+        #st.subheader("Unggah Data dari File")
+    
+        # Tampilkan data yang sudah ada
+        #if st.session_state.data is not None:
+            #st.write("Data yang sudah diunggah (tersimpan):")
+            #t.dataframe(st.session_state.data)
+    
+        # Upload baru
+        #uploaded_files = st.file_uploader(
+            #"Pilih file CSV atau Excel (bisa lebih dari satu)",
+            #type=["csv", "xlsx"],
+            #accept_multiple_files=True
+        #)
+    
+        #if uploaded_files:
+            #all_data = []
+    
+            #for uploaded_file in uploaded_files:
+                #if uploaded_file.name.endswith('.csv'):
+                    #new_data = pd.read_csv(uploaded_file)
+                #else:
+                    #new_data = pd.read_excel(uploaded_file)
+    
+                # Validasi kolom
+                #required_columns = []  # Tambahkan nama kolom wajib jika perlu
+                #has_date_column = 'Tanggal' in new_data.columns
+    
+                # Konversi kolom Tanggal
+                #if has_date_column:
+                    #new_data['Tanggal'] = pd.to_datetime(new_data['Tanggal'], errors='coerce')
+    
+                # Validasi kolom
+                #if all(col in new_data.columns for col in required_columns):
+                    #if 'add_event_column' in locals():
+                        #new_data = add_event_column(new_data)
+                    #all_data.append(new_data)
+                    #st.success(f"Data dari {uploaded_file.name} berhasil diunggah.")
+                #else:
+                    #st.warning(f"Data dari {uploaded_file.name} tidak lengkap. Pastikan semua kolom yang diperlukan ada.")
+    
+            # Gabungkan data baru
+            #if all_data:
+                #if st.session_state.data is not None:
+                    #st.session_state.data = pd.concat([st.session_state.data] + all_data, ignore_index=True)
+                #else:
+                    #st.session_state.data = pd.concat(all_data, ignore_index=True)
+    
+                # Simpan ke file lokal
+                #save_data(st.session_state.data)
+    
+                #st.success("Data berhasil diperbarui dan disimpan!")
+                #st.write("Data saat ini:")
+                #st.dataframe(st.session_state.data)
+
+        #if st.button("Hapus Semua Data (Permanen)"):
+            #confirm = st.radio("Apakah kamu yakin ingin menghapus semua data?", ("Tidak", "Ya"))
+            #if confirm == "Ya":
+                #st.session_state.data = None
+                #if os.path.exists(DATA_FILE):
+                    #os.remove(DATA_FILE)
+                #st.success("Semua data berhasil dihapus secara permanen.")
+                #st.experimental_rerun()
 
 
     # Fungsi Penganggaran dan Peramalan
@@ -1464,7 +1525,7 @@ else:
     
             # Plot grafik omset keseluruhan
             overall_fig = px.line(overall_filtered_revenue, x='Bulan', y='Penjualan', color='Nama Tenaga Penjual',
-                                  title='Tren Omset Keseluruhan per Bulan untuk Setiap Tenaga Penjual',
+                                  title='Tren Omset Keseluruhan per Bulan untuk Setiap Tenaga Penjual (Tanpa Bulan Terakhir)',
                                   markers=True,
                                   labels={'Bulan': 'Bulan', 'Penjualan': 'Total Omset'})
     
@@ -1494,6 +1555,258 @@ else:
     
         else:
             st.warning("Tidak ada data yang dimuat. Silakan Pastikan data sudah tersedia di menu awal.")
+
+    elif menu == "Statistik E-commerce":
+        st.subheader("Statistik E-commerce")
+    
+        if not st.session_state.data.empty:
+            ecommerce_data = st.session_state.data.copy()
+    
+            required_cols = ['Nama Barang Lazada', 'Nama Barang Shopee', 'Nama Barang Tokopedia', 'Kota', 'Harga', 'Berapa Terjual']
+            missing_cols = [col for col in required_cols if col not in ecommerce_data.columns]
+            if missing_cols:
+                st.error(f"Data e-commerce tidak memiliki kolom yang diperlukan: {missing_cols}")
+    
+            st.write("Masukkan kata kunci untuk cari nama barang:")
+            selected_keyword = st.text_input("Kata Kunci").strip().lower()
+    
+            if not selected_keyword:
+                st.warning("Silakan masukkan kata kunci untuk menampilkan data.")
+            else:
+                keywords = selected_keyword.split()
+    
+                # Filter baris yang mengandung semua keyword di salah satu kolom nama barang
+                mask_lazada = ecommerce_data['Nama Barang Lazada'].apply(
+                    lambda x: all(k in x.lower() for k in keywords) if isinstance(x, str) else False
+                )
+                mask_shopee = ecommerce_data['Nama Barang Shopee'].apply(
+                    lambda x: all(k in x.lower() for k in keywords) if isinstance(x, str) else False
+                )
+                mask_tokopedia = ecommerce_data['Nama Barang Tokopedia'].apply(
+                    lambda x: all(k in x.lower() for k in keywords) if isinstance(x, str) else False
+                )
+    
+                mask_contains = mask_lazada | mask_shopee | mask_tokopedia
+                filtered_data = ecommerce_data[mask_contains]
+    
+                if not filtered_data.empty:
+                    filtered_data = filtered_data[required_cols]
+    
+                    # Konversi kolom Harga ke float, mengganti non-numeric dengan NaN
+                    filtered_data['Harga'] = (
+                        filtered_data['Harga']
+                        .astype(str)
+                        .str.replace(r'[^0-9]', '', regex=True)  # Remove non-numeric characters
+                    )
+    
+                    # Convert to numeric, coercing errors to NaN
+                    filtered_data['Harga'] = pd.to_numeric(filtered_data['Harga'], errors='coerce')
+    
+                    # Fill NaN values with 0 or drop rows with NaN in 'Harga'
+                    filtered_data['Harga'] = filtered_data['Harga'].fillna(0)  # Fill NaN with 0
+    
+                    st.write(f"Data yang mengandung kata kunci '{selected_keyword}':")
+                    st.dataframe(filtered_data)
+    
+                    # Calculate min and max prices
+                    min_harga = filtered_data['Harga'].min()
+                    max_harga = filtered_data['Harga'].max()
+                    st.success(f"Harga Terendah: Rp{min_harga:,.0f}")
+                    st.success(f"Harga Tertinggi: Rp{max_harga:,.0f}")
+    
+                    labels = []
+                    sizes = []
+                    colors = []
+    
+                    if filtered_data['Nama Barang Tokopedia'].dropna().any():
+                        labels.append('Tokopedia')
+                        sizes.append(filtered_data['Nama Barang Tokopedia'].notna().sum())
+                        colors.append('#40B349')
+    
+                    if filtered_data['Nama Barang Lazada'].dropna().any():
+                        labels.append('Lazada')
+                        sizes.append(filtered_data['Nama Barang Lazada'].notna().sum())
+                        colors.append('#F00000')
+    
+                    if filtered_data['Nama Barang Shopee'].dropna().any():
+                        labels.append('Shopee')
+                        sizes.append(filtered_data['Nama Barang Shopee'].notna().sum())
+                        colors.append('#FF5722')
+    
+                    # Pie chart estetik
+                    fig, ax = plt.subplots()
+                    wedges, texts, autotexts = ax.pie(
+                        sizes,
+                        labels=labels,
+                        colors=colors,
+                        autopct='%1.1f%%',
+                        startangle=90,
+                        wedgeprops=dict(width=0.4, edgecolor='white'),
+                        textprops={'fontsize': 12, 'color': 'black'}
+                    )
+    
+                    ax.legend(
+                        wedges,
+                        labels,
+                        title="Platform",
+                        loc="center left",
+                        bbox_to_anchor=(1, 0, 0.5, 1),
+                        fontsize=12
+                    )
+    
+                    ax.set_title("Produk per E-commerce", fontsize=14, weight='bold')
+                    ax.axis('equal')
+                    st.pyplot(fig)
+    
+                    # Ensure all plot outputs update in place
+                    placeholder_tokopedia = st.empty()
+                    placeholder_lazada = st.empty()
+                    placeholder_shopee = st.empty()
+    
+                    # Tokopedia
+                    df_tokopedia = filtered_data[['Nama Barang Tokopedia', 'Harga']].dropna()
+                    df_tokopedia = df_tokopedia.rename(columns={'Nama Barang Tokopedia': 'Nama Barang'})
+                    if not df_tokopedia.empty:
+                        df_tokopedia = df_tokopedia.sort_values(by='Harga').reset_index(drop=True)
+                        df_tokopedia['Nama Singkat'] = df_tokopedia['Nama Barang'].str.slice(0, 20) + '...'  # disingkat untuk sumbu X
+    
+                        fig_tokopedia = px.line(
+                            df_tokopedia,
+                            x='Nama Singkat',
+                            y='Harga',
+                            markers=True,
+                            title='Tren Harga Produk Tokopedia',
+                            hover_name='Nama Barang',
+                            labels={'Nama Singkat': 'Produk', 'Harga': 'Harga (Rp)'},
+                            color_discrete_sequence=['#40B349']
+                        )
+                        fig_tokopedia.update_layout(xaxis_title="Nama Produk", yaxis_title="Harga (Rp)")
+                        placeholder_tokopedia.plotly_chart(fig_tokopedia)
+    
+                        # Display min and max prices for Tokopedia
+                        min_tokopedia = df_tokopedia['Harga'].min()
+                        max_tokopedia = df_tokopedia['Harga'].max()
+                        st.write(f"Harga Terendah Tokopedia: Rp{min_tokopedia:,.0f}, Harga Tertinggi Tokopedia: Rp{max_tokopedia:,.0f}")
+    
+                    else:
+                        placeholder_tokopedia.info("Tidak ada data Tokopedia untuk kata kunci ini.")
+    
+                    # Lazada
+                    df_lazada = filtered_data[['Nama Barang Lazada', 'Harga']].dropna()
+                    df_lazada = df_lazada.rename(columns={'Nama Barang Lazada': 'Nama Barang'})
+                    if not df_lazada.empty:
+                        df_lazada = df_lazada.sort_values(by='Harga').reset_index(drop=True)
+                        df_lazada['Nama Singkat'] = df_lazada['Nama Barang'].str.slice(0, 20) + '...'
+    
+                        fig_lazada = px.line(
+                            df_lazada,
+                            x='Nama Singkat',
+                            y='Harga',
+                            markers=True,
+                            title='Tren Harga Produk Lazada',
+                            hover_name='Nama Barang',
+                            labels={'Nama Singkat': 'Produk', 'Harga': 'Harga (Rp)'},
+                            color_discrete_sequence=['#F00000']
+                        )
+                        fig_lazada.update_layout(xaxis_title="Nama Produk", yaxis_title="Harga (Rp)")
+                        placeholder_lazada.plotly_chart(fig_lazada)
+    
+                        # Display min and max prices for Lazada
+                        min_lazada = df_lazada['Harga'].min()
+                        max_lazada = df_lazada['Harga'].max()
+                        st.write(f"Harga Terendah Lazada: Rp{min_lazada:,.0f}, Harga Tertinggi Lazada: Rp{max_lazada:,.0f}")
+    
+                    else:
+                        placeholder_lazada.info("Tidak ada data Lazada untuk kata kunci ini.")
+    
+                    # Shopee
+                    df_shopee = filtered_data[['Nama Barang Shopee', 'Harga']].dropna()
+                    df_shopee = df_shopee.rename(columns={'Nama Barang Shopee': 'Nama Barang'})
+                    if not df_shopee.empty:
+                        df_shopee = df_shopee.sort_values(by='Harga').reset_index(drop=True)
+                        df_shopee['Nama Singkat'] = df_shopee['Nama Barang'].str.slice(0, 20) + '...'
+    
+                        fig_shopee = px.line(
+                            df_shopee,
+                            x='Nama Singkat',
+                            y='Harga',
+                            markers=True,
+                            title='Tren Harga Produk Shopee',
+                            hover_name='Nama Barang',
+                            labels={'Nama Singkat': 'Produk', 'Harga': 'Harga (Rp)'},
+                            color_discrete_sequence=['#FF5722']
+                        )
+                        fig_shopee.update_layout(xaxis_title="Nama Produk", yaxis_title="Harga (Rp)")
+                        placeholder_shopee.plotly_chart(fig_shopee)
+    
+                        # Display min and max prices for Shopee
+                        min_shopee = df_shopee['Harga'].min()
+                        max_shopee = df_shopee['Harga'].max()
+                        st.write(f"Harga Terendah Shopee: Rp{min_shopee:,.0f}, Harga Tertinggi Shopee: Rp{max_shopee:,.0f}")
+    
+                    else:
+                        placeholder_shopee.info("Tidak ada data Shopee untuk kata kunci ini.")
+                    
+                    #YANG BENER
+                    # Pastikan kolom string 
+                    filtered_data['Kota'] = filtered_data['Kota'].astype(str)
+                    filtered_data['Berapa Terjual'] = filtered_data['Berapa Terjual'].astype(str)
+                    
+                    # Ekstrak angka dari 'Berapa Terjual' jadi float
+                    filtered_data['Jumlah Terjual'] = filtered_data['Berapa Terjual'].str.extract(r'(\d+)').astype(float)
+                    
+                    # Ubah NaN jadi 0 agar kota tetap dihitung
+                    filtered_data['Jumlah Terjual'] = filtered_data['Jumlah Terjual'].fillna(0)
+                    
+                    # Groupby tetap semua kota
+                    city_sales = filtered_data.groupby('Kota')['Jumlah Terjual'].sum().reset_index()
+                    
+                    # Pastikan urut berdasarkan jumlah terjual
+                    city_sales = city_sales.sort_values(by='Jumlah Terjual', ascending=False)
+                    
+                    # Membuat grafik bar yang jelas dengan plotly express
+                    fig = px.bar(
+                        city_sales,
+                        x='Kota',
+                        y='Jumlah Terjual',
+                        title=f"Total Produk Terjual per Kota untuk '{selected_keyword}'",
+                        labels={'Jumlah Terjual': 'Jumlah Produk Terjual', 'Kota': 'Kota'},
+                        text='Jumlah Terjual',
+                        color='Jumlah Terjual',
+                        color_continuous_scale=px.colors.sequential.Blues,
+                        height=500,  # Lebih tinggi agar lebih lega
+                        width=900   # Lebar lebar agar tidak sempit
+                    )
+                    
+                    # Memperjelas tampilan angka pada bar
+                    fig.update_traces(
+                        texttemplate='%{text:.0f}',
+                        textposition='outside',
+                        marker_line_width=1.5,  # Garis batas bar
+                        marker_line_color='rgba(0,0,0,0.6)'  # Warna garis batas bar
+                    )
+                    
+                    # Set layout untuk memperjelas axis dan tema
+                    fig.update_layout(
+                        xaxis_title='Kota',
+                        yaxis_title='Jumlah Produk Terjual',
+                        xaxis_tickangle=-45,
+                        yaxis=dict(range=[0, city_sales['Jumlah Terjual'].max() + city_sales['Jumlah Terjual'].max()*0.1]),
+                        template='plotly_white',
+                        font=dict(size=14, color='black'),  # Ukuran dan warna font keseluruhan
+                        margin=dict(t=60, b=150, l=70, r=40),  # Margin untuk label x yang berputar
+                        coloraxis_colorbar=dict(
+                            title="Jumlah Terjual",
+                            ticks="outside",
+                            ticklen=5,
+                            outlinewidth=1
+                        )
+                    )
+                    
+                    # Tampilkan grafik pada Streamlit
+                    st.plotly_chart(fig, use_container_width=True)
+                else:
+                    st.info(f"Kata kunci '{selected_keyword}' tidak ditemukan dalam data.")
 
     # Menambahkan opsi untuk mereset seluruh chat history
     if st.sidebar.button("Reset Chat History"):
