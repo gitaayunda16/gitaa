@@ -1752,8 +1752,6 @@ else:
                     filtered_data['Kota'] = filtered_data['Kota'].astype(str)
                     filtered_data['Berapa Terjual'] = filtered_data['Berapa Terjual'].astype(str)
                     
-                    # Ekstrak angka dari 'Berapa Terjual' jadi float
-                    #filtered_data['Jumlah Terjual'] = filtered_data['Berapa Terjual'].str.extract(r'(\d+)').astype(float)
                     
                     filtered_data['Jumlah Terjual'] = filtered_data['Berapa Terjual'].apply(
                         lambda x: (
@@ -1774,6 +1772,9 @@ else:
                     
                     # Pastikan urut berdasarkan jumlah terjual
                     city_sales = city_sales.sort_values(by='Jumlah Terjual', ascending=False)
+                    
+                    st.write("Jumlah Terjual berdasarkan kota")
+                    st.dataframe(city_sales)
                     
                     # Membuat grafik bar yang jelas dengan plotly express
                     fig = px.bar(
