@@ -1753,7 +1753,18 @@ else:
                     filtered_data['Berapa Terjual'] = filtered_data['Berapa Terjual'].astype(str)
                     
                     # Ekstrak angka dari 'Berapa Terjual' jadi float
-                    filtered_data['Jumlah Terjual'] = filtered_data['Berapa Terjual'].str.extract(r'(\d+)').astype(float)
+                    #filtered_data['Jumlah Terjual'] = filtered_data['Berapa Terjual'].str.extract(r'(\d+)').astype(float)
+                    
+                    filtered_data['Jumlah Terjual'] = filtered_data['Berapa Terjual'].apply(
+                        lambda x: (
+                            float(re.findall(r'[\d,]+', str(x))[0].replace(',', '.')) * 1000
+                            if 'rb' in str(x).lower()
+                            else float(re.findall(r'\d+', str(x))[0])
+                            if re.findall(r'\d+', str(x))
+                            else 0.0
+                        )
+                    )
+
                     
                     # Ubah NaN jadi 0 agar kota tetap dihitung
                     filtered_data['Jumlah Terjual'] = filtered_data['Jumlah Terjual'].fillna(0)
