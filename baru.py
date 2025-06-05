@@ -243,8 +243,10 @@ def chat(contexts, history, question):
 
 # Lokasi permanen penyimpanan (di AppData / Roaming)
 def get_app_data_path(filename):
-    appdata_folder = os.getenv ("APPDATA")  # Windows: C:\Users\<user>\AppData\Roaming
-    save_folder = os.path.join(appdata_folder, "AplikasiUnggahan")  # Folder khusus app-mu
+    #appdata_folder = os.getenv ("APPDATA")  # Windows: C:\Users\<user>\AppData\Roaming
+    appdata_folder = os.getenv ("gitaa")
+    save_folder = os.path.join(appdata_folder)
+    #save_folder = os.path.join(appdata_folder, "AplikasiUnggahan")  # Folder khusus app-mu
     os.makedirs(save_folder, exist_ok=True)
     return os.path.join(save_folder, filename)
 
