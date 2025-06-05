@@ -8,6 +8,6 @@ matplotlib
 scikit-learn
 xgboost
 openpyxl
-langchain-google-genaistreamlit
+langchain-google-genai
 langchain-core
 sqlalchemy
