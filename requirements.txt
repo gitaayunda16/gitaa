@@ -1,7 +1,7 @@
 streamlit
 pandas
 numpy
-xlsxwriter
+holidays
 statsmodels
 prophet
 plotly
@@ -9,7 +9,6 @@ matplotlib
 scikit-learn
 xgboost
 openpyxl
-langchain-google-genai
+langchain-google-genaistreamlit
 langchain-core
 sqlalchemy
-sys
