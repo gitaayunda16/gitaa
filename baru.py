@@ -242,34 +242,50 @@ def chat(contexts, history, question):
     return result
 
 # Lokasi permanen penyimpanan (di AppData / Roaming)
-def get_app_data_path(filename):
-    #appdata_folder = os.getenv ("APPDATA")  # Windows: C:\Users\<user>\AppData\Roaming
-    appdata_folder = os.getenv ("gitaa")
-    save_folder = os.path.join()
+#def get_app_data_path(filename):
+    #appdata_folder = os.getenv ("APPDATA")  # Windows: C:\Users\<user>\AppData\Roamin
     #save_folder = os.path.join(appdata_folder)
     #save_folder = os.path.join(appdata_folder, "AplikasiUnggahan")  # Folder khusus app-mu
-    os.makedirs(save_folder, exist_ok=True)
-    return os.path.join(save_folder, filename)
+    #os.makedirs(save_folder, exist_ok=True)
+    #return os.path.join(save_folder, filename)
 
 # Path permanen untuk database dan pickle
-DATABASE_PATH = get_app_data_path("data_unggahan.db")
-DATA_FILE = get_app_data_path("saved_data.pkl")
+#DATABASE_PATH = get_app_data_path("data_unggahan.db")
+#DATA_FILE = get_app_data_path("saved_data.pkl")
     
      # Lokasi file penyimpanan data
 #DATA_FILE = "saved_data.pkl"
-engine = create_engine(f"sqlite:///{DATABASE_PATH}")
+#engine = create_engine(f"sqlite:///{DATABASE_PATH}")
 
         
     # Fungsi untuk load data dari file
-def load_data():
-    if os.path.exists(DATA_FILE):
-        return pd.read_pickle(DATA_FILE)
-    return None
+#def load_data():
+    #if os.path.exists(DATA_FILE):
+        #return pd.read_pickle(DATA_FILE)
+    #return None
         
     # Fungsi untuk save data ke file
-def save_data(data):
-    data.to_pickle(DATA_FILE)
-    
+#def save_data(data):
+    #data.to_pickle(DATA_FILE)
+
+# Ganti dengan URL database Anda
+DATABASE_URL = st.secrets["database_url"]  # Simpan kredensial di Streamlit Secrets
+engine = create_engine(DATABASE_URL)
+# Fungsi untuk menyimpan data ke database
+def save_data_to_db(df, table_name):
+    df.to_sql(table_name, engine, if_exists="append", index=False)
+
+# Fungsi untuk memuat data dari database
+def load_data_from_db(table_name):
+    query = f"SELECT * FROM {table_name}"
+    try:
+        df = pd.read_sql(query, engine)
+        return df
+    except Exception as e:
+        st.error(f"Gagal memuat tabel {table_name}: {e}")
+        return pd.DataFrame()
+
+
     # Cek apakah pengguna sudah login
 PASSWORD = "admin1234"  # Ganti dengan password yang diinginkan
 if 'logged_in' not in st.session_state:
@@ -339,14 +355,20 @@ else:
                     new_data['Tanggal'] = pd.to_datetime(new_data['Tanggal'])
                 else:
                     st.warning(f"Kolom 'Tanggal' tidak ditemukan di {uploaded_file.name}. Data akan tetap diunggah tanpa kolom 'Tanggal'.")
+
+                # Ambil nama tabel dari nama file
+                table_name = uploaded_file.name.rsplit('.', 1)[0].lower()
+        # Simpan data ke database
+                save_data_to_db(new_data, table_name)
+                st.success(f"Data dari {uploaded_file.name} berhasil disimpan ke tabel `{table_name}`.")
     
                 # Tentukan nama tabel dari nama file
-                table_name = uploaded_file.name.split('.')[0].lower()  # nama tabel dari nama file
+                #table_name = uploaded_file.name.split('.')[0].lower()  # nama tabel dari nama file
                 
                 # Simpan data ke database
-                new_data.to_sql(table_name, engine, if_exists="append", index=False)
-                all_data.append(new_data)
-                st.success(f"Data dari {uploaded_file.name} berhasil diunggah dan disimpan ke database ({table_name}).")
+                #new_data.to_sql(table_name, engine, if_exists="append", index=False)
+                #all_data.append(new_data)
+                #st.success(f"Data dari {uploaded_file.name} berhasil diunggah dan disimpan ke database ({table_name}).")
     
             if all_data:
                 if st.session_state.data is not None:
