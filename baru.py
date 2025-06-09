@@ -268,9 +268,14 @@ def chat(contexts, history, question):
 #def save_data(data):
     #data.to_pickle(DATA_FILE)
 
+#DATABASE_URL = st.secrets["database_url"]
+#engine = create_engine(DATABASE_URL)
+
 # Ganti dengan URL database Anda
 DATABASE_URL = st.secrets["database_url"]  # Simpan kredensial di Streamlit Secrets
 engine = create_engine(DATABASE_URL)
+st.write(engine)
+
 # Fungsi untuk menyimpan data ke database
 def save_data_to_db(df, table_name):
     df.to_sql(table_name, engine, if_exists="append", index=False)
@@ -284,7 +289,6 @@ def load_data_from_db(table_name):
     except Exception as e:
         st.error(f"Gagal memuat tabel {table_name}: {e}")
         return pd.DataFrame()
-
 
     # Cek apakah pengguna sudah login
 PASSWORD = "admin1234"  # Ganti dengan password yang diinginkan
