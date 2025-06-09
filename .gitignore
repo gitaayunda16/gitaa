@@ -1,7 +1,31 @@
-saved_data.pkl
-*.pkl
+# Python cache & virtualenv
 __pycache__/
-*.pyc
-.DS_Store
+*.py[cod]
+*.pyo
+*.pyd
+env/
+venv/
 .env
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Editor/OS files
+.vscode/
+.DS_Store
+desktop.ini
+
+# Build artifacts
+build/
+dist/
+*.spec
+
+# Database files
+*.db
+
+# Streamlit secrets
 .streamlit/secrets.toml
+
+# Pickle or saved models/data
+*.pkl
+saved_data.pkl
