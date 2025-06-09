@@ -3,4 +3,5 @@ saved_data.pkl
 __pycache__/
 *.pyc
 .DS_Store
-credentials.toml
+.env
+.streamlit/secrets.toml
