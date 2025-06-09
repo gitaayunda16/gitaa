@@ -241,14 +241,6 @@ def chat(contexts, history, question):
         
     return result
 
-# Lokasi permanen penyimpanan (di AppData / Roaming)
-#def get_app_data_path(filename):
-    #appdata_folder = os.getenv ("APPDATA")  # Windows: C:\Users\<user>\AppData\Roamin
-    #save_folder = os.path.join(appdata_folder)
-    #save_folder = os.path.join(appdata_folder, "AplikasiUnggahan")  # Folder khusus app-mu
-    #os.makedirs(save_folder, exist_ok=True)
-    #return os.path.join(save_folder, filename)
-
 # Path permanen untuk database dan pickle
 #DATABASE_PATH = get_app_data_path("data_unggahan.db")
 #DATA_FILE = get_app_data_path("saved_data.pkl")
@@ -256,6 +248,25 @@ def chat(contexts, history, question):
      # Lokasi file penyimpanan data
 #DATA_FILE = "saved_data.pkl"
 #engine = create_engine(f"sqlite:///{DATABASE_PATH}")
+
+# Ambil data dari database
+
+if "database_url" not in st.secrets:
+    st.stop()
+DATABASE_URL = st,secrets["database_url"]
+engine = create_engine(DATABASE_URL)
+
+def save_data_to_db(df, table_name):
+    df.to_sql(table_name, engine, if_exists="append", index=False)
+
+def load_data_from_db(table_name):
+    query = f"SELECT * FROM {table_name}"
+    try:
+        df = pd.read_sql(query, engine)
+        return df
+    except Exception as e:
+        st.error(f"Gagal memuat tabel {table_name}: {e}")
+        return pd.DataFrame()
 
         
     # Fungsi untuk load data dari file
@@ -268,27 +279,23 @@ def chat(contexts, history, question):
 #def save_data(data):
     #data.to_pickle(DATA_FILE)
 
-#DATABASE_URL = st.secrets["database_url"]
+# Ganti dengan URL database Anda
+#DATABASE_URL = st.secrets["database_url"]  # Simpan kredensial di Streamlit Secrets
 #engine = create_engine(DATABASE_URL)
 
-# Ganti dengan URL database Anda
-DATABASE_URL = st.secrets["database_url"]  # Simpan kredensial di Streamlit Secrets
-engine = create_engine(DATABASE_URL)
-st.write(engine)
-
 # Fungsi untuk menyimpan data ke database
-def save_data_to_db(df, table_name):
-    df.to_sql(table_name, engine, if_exists="append", index=False)
+#def save_data_to_db(df, table_name):
+    #df.to_sql(table_name, engine, if_exists="append", index=False)
 
 # Fungsi untuk memuat data dari database
-def load_data_from_db(table_name):
-    query = f"SELECT * FROM {table_name}"
-    try:
-        df = pd.read_sql(query, engine)
-        return df
-    except Exception as e:
-        st.error(f"Gagal memuat tabel {table_name}: {e}")
-        return pd.DataFrame()
+#def load_data_from_db(table_name):
+    #query = f"SELECT * FROM {table_name}"
+    #try:
+        #df = pd.read_sql(query, engine)
+        #return df
+    #except Exception as e:
+        #st.error(f"Gagal memuat tabel {table_name}: {e}")
+        #return pd.DataFrame()
 
     # Cek apakah pengguna sudah login
 PASSWORD = "admin1234"  # Ganti dengan password yang diinginkan
