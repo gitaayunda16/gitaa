@@ -379,10 +379,10 @@ else:
                     st.warning(f"Kolom 'Tanggal' tidak ditemukan di {uploaded_file.name}. Data akan tetap diunggah tanpa kolom 'Tanggal'.")
 
                 # Ambil nama tabel dari nama file
-                table_name = uploaded_file.name.rsplit('.', 1)[0].lower()
+                #table_name = uploaded_file.name.rsplit('.', 1)[0].lower()
         # Simpan data ke database
-                save_data_to_db(new_data, table_name)
-                st.success(f"Data dari {uploaded_file.name} berhasil disimpan ke tabel `{table_name}`.")
+                #save_data_to_db(new_data, table_name)
+                #st.success(f"Data dari {uploaded_file.name} berhasil disimpan ke tabel `{table_name}`.")
     
                 # Tentukan nama tabel dari nama file
                 #table_name = uploaded_file.name.split('.')[0].lower()  # nama tabel dari nama file
