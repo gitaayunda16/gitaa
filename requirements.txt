@@ -12,3 +12,4 @@ openpyxl
 langchain-google-genai
 langchain-core
 sqlalchemy
+xlsxwriter
