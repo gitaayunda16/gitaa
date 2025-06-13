@@ -63,12 +63,31 @@ def get_event_dates(year):
     # Mendapatkan event untuk tahun ini
 current_year = datetime.now().year
 event_dates = get_event_dates(current_year)
-    
+
 def add_event_column(data):
-    year = data['Tanggal'].dt.year.unique()[0]
-    event_dates = get_event_dates(year)
-    data['Event'] = data['Tanggal'].apply(lambda x: any(x.date() in event for event in event_dates.values()))
+    if 'Tanggal' in data.columns:
+        # Ensure 'Tanggal' is in datetime format
+        data['Tanggal'] = pd.to_datetime(data['Tanggal'], errors='coerce')
+        
+        # Check if 'Tanggal' has valid entries
+        if data['Tanggal'].isnull().all():
+            st.warning("Kolom 'Tanggal' tidak memiliki entri yang valid.")
+            return data  # Return the data without modifications
+        
+        year = data['Tanggal'].dt.year.unique()[0]
+        event_dates = get_event_dates(year)
+        data['Event'] = data['Tanggal'].apply(lambda x: any(x.date() in event for event in event_dates.values()))
+    else:
+        st.warning("Kolom 'Tanggal' tidak ditemukan dalam data.")
+    
     return data
+
+
+#def add_event_column(data):
+    #year = data['Tanggal'].dt.year.unique()[0]
+    #event_dates = get_event_dates(year)
+    #data['Event'] = data['Tanggal'].apply(lambda x: any(x.date() in event for event in event_dates.values()))
+    #return data
     
 def select_forecasting_method(product_data, steps=3, method='ARIMA'):
     if isinstance(product_data, pd.DataFrame):
