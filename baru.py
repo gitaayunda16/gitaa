@@ -296,7 +296,7 @@ def chat(contexts, history, question):
     #except Exception as e:
         #st.error(f"Gagal memuat tabel {table_name}: {e}")
         #return pd.DataFrame()
-DATA_FILE = "saved_data_baru.pkl"
+DATA_FILE = "saved_data.pkl"
         
     # Fungsi untuk load data dari file
 def load_data():
