@@ -251,22 +251,22 @@ def chat(contexts, history, question):
 
 # Ambil data dari database
 
-if "database_url" not in st.secrets:
-    st.stop()
-DATABASE_URL = st,secrets["database_url"]
-engine = create_engine(DATABASE_URL)
+#f "database_url" not in st.secrets:
+    #st.stop()
+#DATABASE_URL = st,secrets["database_url"]
+#engine = create_engine(DATABASE_URL)
 
-def save_data_to_db(df, table_name):
-    df.to_sql(table_name, engine, if_exists="append", index=False)
+#def save_data_to_db(df, table_name):
+    #df.to_sql(table_name, engine, if_exists="append", index=False)
 
-def load_data_from_db(table_name):
-    query = f"SELECT * FROM {table_name}"
-    try:
-        df = pd.read_sql(query, engine)
-        return df
-    except Exception as e:
-        st.error(f"Gagal memuat tabel {table_name}: {e}")
-        return pd.DataFrame()
+#def load_data_from_db(table_name):
+    #query = f"SELECT * FROM {table_name}"
+    #try:
+        #df = pd.read_sql(query, engine)
+        #return df
+    #except Exception as e:
+        #st.error(f"Gagal memuat tabel {table_name}: {e}")
+        #return pd.DataFrame()
 
         
     # Fungsi untuk load data dari file
@@ -296,6 +296,17 @@ def load_data_from_db(table_name):
     #except Exception as e:
         #st.error(f"Gagal memuat tabel {table_name}: {e}")
         #return pd.DataFrame()
+DATA_FILE = "saved_data_baru.pkl"
+        
+    # Fungsi untuk load data dari file
+def load_data():
+    if os.path.exists(DATA_FILE):
+        return pd.read_pickle(DATA_FILE)
+    return None
+        
+    # Fungsi untuk save data ke file
+def save_data(data):
+    data.to_pickle(DATA_FILE)
 
     # Cek apakah pengguna sudah login
 PASSWORD = "admin1234"  # Ganti dengan password yang diinginkan
