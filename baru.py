@@ -349,34 +349,34 @@ else:
         "Statistik E-commerce"
     ])
 
-    if menu == "Unggah Data":
-        st.subheader("Unggah Data dari File")
+    #if menu == "Unggah Data":
+        #st.subheader("Unggah Data dari File")
         
         # Tampilkan data yang sudah ada
-        if st.session_state.data is not None:
-            st.write("Data yang sudah diunggah (tersimpan):")
-            st.dataframe(st.session_state.data)
+        #if st.session_state.data is not None:
+            #st.write("Data yang sudah diunggah (tersimpan):")
+            #st.dataframe(st.session_state.data)
         
-        uploaded_files = st.file_uploader(
-            "Pilih file CSV atau Excel (bisa lebih dari satu)",
-            type=["csv", "xlsx"],
-            accept_multiple_files=True
-        )
+        #uploaded_files = st.file_uploader(
+            #"Pilih file CSV atau Excel (bisa lebih dari satu)",
+            #type=["csv", "xlsx"],
+            #accept_multiple_files=True
+        #)
         
-        if uploaded_files:
-            all_data = []
+        #if uploaded_files:
+            #all_data = []
             
-            for uploaded_file in uploaded_files:
-                if uploaded_file.name.endswith('.csv'):
-                    new_data = pd.read_csv(uploaded_file)
-                else:
-                    new_data = pd.read_excel(uploaded_file)
+            #for uploaded_file in uploaded_files:
+                #if uploaded_file.name.endswith('.csv'):
+                    #new_data = pd.read_csv(uploaded_file)
+                #else:
+                    #new_data = pd.read_excel(uploaded_file)
     
                 # Jika kolom 'Tanggal' ada, konversi ke tipe datetime
-                if 'Tanggal' in new_data.columns:
-                    new_data['Tanggal'] = pd.to_datetime(new_data['Tanggal'])
-                else:
-                    st.warning(f"Kolom 'Tanggal' tidak ditemukan di {uploaded_file.name}. Data akan tetap diunggah tanpa kolom 'Tanggal'.")
+                #if 'Tanggal' in new_data.columns:
+                    #new_data['Tanggal'] = pd.to_datetime(new_data['Tanggal'])
+                #else:
+                    #st.warning(f"Kolom 'Tanggal' tidak ditemukan di {uploaded_file.name}. Data akan tetap diunggah tanpa kolom 'Tanggal'.")
 
                 # Ambil nama tabel dari nama file
                 #table_name = uploaded_file.name.rsplit('.', 1)[0].lower()
@@ -392,16 +392,74 @@ else:
                 #all_data.append(new_data)
                 #st.success(f"Data dari {uploaded_file.name} berhasil diunggah dan disimpan ke database ({table_name}).")
     
+            #if all_data:
+                #if st.session_state.data is not None:
+                    #st.session_state.data = pd.concat([st.session_state.data] + all_data, ignore_index=True)
+                #else:
+                    #st.session_state.data = pd.concat(all_data, ignore_index=True)
+                
+                #save_data(st.session_state.data)
+                #st.success("Data berhasil diperbarui dan disimpan!")
+                #st.write("Data saat ini:")
+                #st.dataframe(st.session_state.data)
+
+        # Fungsi Unggah Data
+    if menu == "Unggah Data":
+        st.subheader("Unggah Data dari File")
+    
+        # Tampilkan data yang sudah ada
+        if st.session_state.data is not None:
+            st.write("Data yang sudah diunggah (tersimpan):")
+            st.dataframe(st.session_state.data)
+    
+        # Upload baru
+        uploaded_files = st.file_uploader(
+            "Pilih file CSV atau Excel (bisa lebih dari satu)",
+            type=["csv", "xlsx"],
+            accept_multiple_files=True
+        )
+    
+        if uploaded_files:
+            all_data = []
+    
+            for uploaded_file in uploaded_files:
+                if uploaded_file.name.endswith('.csv'):
+                    new_data = pd.read_csv(uploaded_file)
+                else:
+                    new_data = pd.read_excel(uploaded_file)
+    
+                # Validasi kolom
+                required_columns = []  # Tambahkan nama kolom wajib jika perlu
+                has_date_column = 'Tanggal' in new_data.columns
+    
+                # Konversi kolom Tanggal
+                if has_date_column:
+                    new_data['Tanggal'] = pd.to_datetime(new_data['Tanggal'], errors='coerce')
+    
+                # Validasi kolom
+                if all(col in new_data.columns for col in required_columns):
+                    if 'add_event_column' in locals():
+                        new_data = add_event_column(new_data)
+                    all_data.append(new_data)
+                    st.success(f"Data dari {uploaded_file.name} berhasil diunggah.")
+                else:
+                    st.warning(f"Data dari {uploaded_file.name} tidak lengkap. Pastikan semua kolom yang diperlukan ada.")
+    
+            # Gabungkan data baru
             if all_data:
                 if st.session_state.data is not None:
                     st.session_state.data = pd.concat([st.session_state.data] + all_data, ignore_index=True)
                 else:
                     st.session_state.data = pd.concat(all_data, ignore_index=True)
-                
+    
+                # Simpan ke file lokal
                 save_data(st.session_state.data)
+    
                 st.success("Data berhasil diperbarui dan disimpan!")
                 st.write("Data saat ini:")
                 st.dataframe(st.session_state.data)
+
+        
 
         # Fungsi Penganggaran dan Peramalan
     elif menu == "Penganggaran dan Peramalan":
